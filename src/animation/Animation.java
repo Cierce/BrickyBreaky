@@ -3,12 +3,12 @@ import main.GamePanel;
 
 public class Animation implements Runnable
 {
-	private GamePanel blockyBreaker;
+	private GamePanel brickyBreaker;
 	private boolean run;
 	
 	public Animation(GamePanel move)
 	{
-		blockyBreaker = move;
+		brickyBreaker = move;
 	}
 
 	public void run() 
@@ -17,7 +17,7 @@ public class Animation implements Runnable
 		
 		while(run)
 		{
-			blockyBreaker.update();
+			brickyBreaker.update();
 			try 
 			{
 				Thread.sleep(10);  

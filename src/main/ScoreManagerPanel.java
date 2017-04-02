@@ -1,17 +1,15 @@
 package main;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import javax.swing.JPanel;
-import javax.swing.Box;
-import javax.swing.JLabel;
-import javax.swing.JTextArea;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 public class ScoreManagerPanel extends JPanel
 {
@@ -28,85 +26,53 @@ public class ScoreManagerPanel extends JPanel
 	private BufferedReader bufferLeaderboard;
 	private FileWriter writeToFile;
 	private ArrayList<String[]> scores;
+	private DefaultTableModel model;
+	private JTable tblLeaderboard;
+	private JScrollPane scrollPane;
+	int count;
+	int maxRowDisplay;
+
 
 	ScoreManagerPanel() 
 	{
+		this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		loadScores();
 		sortScores();
-		loadLeaderboard();
+		//loadLeaderboard();
+		newLeaderboard();
 	}
 
-	private void loadLeaderboard()
-	{	
-		//Loads the leaderboard components 
-		setLayout(null);
-		lblTitle      = new JLabel();
-		lblColumnDesc = new JLabel();
-		txtUsername   = new JTextArea();
-		txtUserScore  = new JTextArea();
-		txtUserRank   = new JTextArea();
-		bgColour = new Color(147, 198, 232); //alternative 155, 209, 245
+	private void newLeaderboard()
+	{
+		count = 0;
+		maxRowDisplay = scores.size();
+		String[] tblHeaders = {"USERNAME", "SCORE", "RANK"};
+		String[][] tblData = new String[maxRowDisplay][3];
 
-		//populates the leaderboard with data
-		maxResultsShown = 10;
-		getScore    = new String[maxResultsShown];
-		intUsrRank  = new int[maxResultsShown];
-		usrName     = "";
-		usrScore    = "";
-		strUsrRank  = "";
-
-		add(Box.createRigidArea(new Dimension(100, 0))); //sets the spacing offset the pane
-		setBackground(bgColour);
-		lblTitle.setText("<html><center>LEADERBOARD<br>TOP 10</center></html>");
-		lblTitle.setFont(new Font("Helvetica", Font.BOLD, 14));
-
-		lblColumnDesc.setText("USERNAME         SCORE           RANK");
-		lblColumnDesc.setFont(new Font("Helvetica", Font.BOLD, 11));
-
-		txtUsername.setEditable(false);
-		txtUserScore.setEditable(false);
-		txtUserRank.setEditable(false);
-
-		txtUsername.setOpaque(false);
-		txtUserScore.setOpaque(false);
-		txtUserRank.setOpaque(false);
-
-		txtUsername.setFont(new Font("Helvetica",  Font.BOLD, 12));
-		txtUserScore.setFont(new Font("Helvetica", Font.BOLD, 12));
-		txtUserRank.setFont(new Font("Helvetica",  Font.BOLD, 12));
-		
-		lblTitle.setBounds(95, -25, 200, 100);
-		lblColumnDesc.setBounds(50, 5, 250, 100);
-		txtUsername.setBounds(50, 65, 250, 200);
-		txtUserScore.setBounds(145, 65, 250, 200);
-		txtUserRank.setBounds(220, 65, 250, 200);
-		
-		add(lblTitle);
-		add(lblColumnDesc);
-		add(txtUsername);
-		add(Box.createRigidArea(new Dimension(30, 0)));
-		add(txtUserScore);
-		add(Box.createRigidArea(new Dimension(45, 0)));
-		add(txtUserRank);
-	
-		
-		maxResultsShown = 0;
-		for(int i = 0; i < scores.size(); i++)
+		for(int row = 0; row < maxRowDisplay; row++)
 		{
-			if(maxResultsShown < 10)
+			for(int column = 0; column < 3; column++)
 			{
-				getScore = scores.get(i);
-				usrName  += getScore[0] + "\n";
-				usrScore += getScore[1] + "\n";
-				intUsrRank[i] = (i + 1);
-				strUsrRank += Integer.toString(intUsrRank[i]) + "\n";
+				if(count == 2)
+				{
+					tblData[row][column] = Integer.toString(row + 1);
+					count = 0;
+				}
+				else
+				{
+					tblData[row][column] = scores.get(row)[count];
+					count++;
+				}
 			}
-			maxResultsShown++;
 		}
+		model = new DefaultTableModel(tblData, tblHeaders);
+		tblLeaderboard = new JTable(model);
+		scrollPane = new JScrollPane(tblLeaderboard);
+		this.add(scrollPane);
 
-		txtUsername.setText(usrName.toLowerCase());
-		txtUserScore.setText(usrScore);
-		txtUserRank.setText(strUsrRank);
+		JButton btnBack = new JButton("Back");
+		btnBack.addActionListener(new BackToMenu());
+		this.add(btnBack);
 	}
 
 	private void loadScores() 
@@ -147,7 +113,7 @@ public class ScoreManagerPanel extends JPanel
 			{
 				for (int i = 0; i < scoresSorted.size() - x - 1; i++) 
 				{
-					// _scores[i][name][score]
+					// _scores[i][name][score][rank]
 					if (Integer.parseInt(scoresSorted.get(i)[1]) < Integer.parseInt(scoresSorted.get(i + 1)[1])) 
 					{
 						// Store n+1th element into a temporary variable
@@ -163,17 +129,38 @@ public class ScoreManagerPanel extends JPanel
 		}
 		// overwrite the scores array with the new sorted list
 		this.scores = scoresSorted;
+		writeSortedScores();
 	}
 
-	public void writeScores(String username, int gameScore)
+	public void writeSortedScores()
+	{
+		try
+		{
+			leaderboard = new File("leaderboard.txt");
+			writeToFile = new FileWriter(leaderboard);
+
+			for(int i = 0; i < scores.size(); i++)
+			{
+				getScore = scores.get(i);
+				writeToFile.write("\n" + getScore[0] + " " + Integer.parseInt(getScore[1]));
+			}
+			writeToFile.flush();
+			writeToFile.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public void writeNewScore(String username, int gameScore)
 	{
 		try 
 		{
 			leaderboard = new File("leaderboard.txt");
 			writeToFile = new FileWriter(leaderboard, true);
-			
-			writeToFile.write("\n" + username + " ");
-			writeToFile.write(Integer.toString(gameScore));
+
+			writeToFile.write("\n" + username + " " + Integer.toString(gameScore));
 			writeToFile.flush();
 			writeToFile.close();
 		} 
@@ -181,6 +168,11 @@ public class ScoreManagerPanel extends JPanel
 		{
 			e.printStackTrace();
 		}
+	}
+
+	public void closePanel()
+	{
+		SwingUtilities.getWindowAncestor(this).dispose();
 	}
 
 	/*
@@ -193,8 +185,12 @@ public class ScoreManagerPanel extends JPanel
 		return (score > Integer.parseInt(this.scores.get(this.scores.size())[1]));
 	}
 
-	public void addScore(int score)
+	class BackToMenu implements ActionListener
 	{
-		/* TODO: add the new score in the correct position*/
+		@Override
+		public void actionPerformed(ActionEvent accEvent)
+		{
+			closePanel();
+		}
 	}
 }

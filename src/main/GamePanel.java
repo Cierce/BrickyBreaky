@@ -38,7 +38,6 @@ public class GamePanel extends JPanel implements KeyListener
 	private boolean lostGame;
 	private JLabel lblGameScore, lblPressEnter;
 	private ArrayList<AudioPlayer> gameSFX;
-
 	Thread thread;
 	Animation gameState;
 
@@ -285,7 +284,6 @@ public class GamePanel extends JPanel implements KeyListener
 			gameSFX.get(1).play();
 			ball.setDirectionY(-(ball.getVelocity()));
 		}
-
 		repaint();	//repaints 'this' every tick
 	}
 
@@ -305,21 +303,18 @@ public class GamePanel extends JPanel implements KeyListener
 					usrInput = usrInput.substring(0, 10);
 				}
 				//usrInput = usrInput.toUpperCase();
-				scoreManager.writeScores(usrInput, gameScore);
+				scoreManager.writeNewScore(usrInput, gameScore);
 			}
 		}
 	}
 
 	public void playAgain()
 	{
-		dialogResult = 0;
-
 		dialogResult = JOptionPane.showConfirmDialog (this, "Would you like to play again?","You lose! Score: " + Integer.toString(gameScore), dialogResult);
 
 		if(dialogResult == JOptionPane.NO_OPTION)
 		{
 			gameState.stopGame();
-			resetGame();
 			SwingUtilities.getWindowAncestor(this).dispose();
 		}
 		else if(dialogResult == JOptionPane.YES_OPTION)
@@ -346,7 +341,7 @@ public class GamePanel extends JPanel implements KeyListener
 			thread  = new Thread(gameState);
 			thread.start();
 		}
-		if((e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT) && platform.x > 0)
+		if((e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT))
 		{
 			platform.x -= 60;
 		}
@@ -356,7 +351,8 @@ public class GamePanel extends JPanel implements KeyListener
 		}
 		if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
 		{
-			System.exit(0);
+			thread.interrupt();
+			SwingUtilities.getWindowAncestor(this).dispose();
 		}
 	}
 
