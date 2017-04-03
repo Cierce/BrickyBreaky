@@ -28,7 +28,7 @@ public class ScoreManagerPanel extends JPanel
 
 	ScoreManagerPanel()
 	{
-		loadScoreDB();
+		loadLeaderBoardData();
 		loadScores();
 		sortScores();
 		loadLeaderboard();
@@ -39,25 +39,28 @@ public class ScoreManagerPanel extends JPanel
 	{
 		userScoreIndex = 0;
 		maxRowDisplay  = scores.size();
-		String[] tblHeaders = {"USERNAME", "SCORE", "HARD MODE", "RANK"};
+		String[] tblHeaders = {"RANK", "USERNAME", "SCORE", "HARD MODE"};
 		String[][] tblData = new String[maxRowDisplay][tblHeaders.length];
 
 		for(int row = 0; row < maxRowDisplay; row++)
 		{
 			for(int column = 0; column < tblHeaders.length; column++)
 			{
-               if(column == 3)
+               if(column == 0)
                {
                    tblData[row][column] = Integer.toString((row + 1));
                }
                else
                {
-                   tblData[row][column] = scores.get(row)[column].toUpperCase();
+                   tblData[row][column] = scores.get(row)[column - 1];
                }
             }
 		}
 		model = new DefaultTableModel(tblData, tblHeaders);
 		tblLeaderboard = new JTable(model);
+		tblLeaderboard.setEnabled(false);
+		tblLeaderboard.getTableHeader().setReorderingAllowed(false);
+		tblLeaderboard.getTableHeader().setResizingAllowed(false);
 		scrollPane = new JScrollPane(tblLeaderboard);
 		this.add(scrollPane);
 
@@ -67,7 +70,7 @@ public class ScoreManagerPanel extends JPanel
 		this.add(btnBack);
 	}
 
-	public void loadScoreDB()
+	public void loadLeaderBoardData()
 	{
 		ldrBrdDataStore = new File("ldrBrdDataStore.txt");
 		try
@@ -154,7 +157,7 @@ public class ScoreManagerPanel extends JPanel
 		}
 	}
 
-	public void writeNewScore(String username, int gameScore, boolean isSetHardmode)
+	public void writeNewScore(String username, int gameScore, String isSetHardmode)
 	{
 		try
 		{

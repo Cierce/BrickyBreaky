@@ -26,6 +26,7 @@ public class GamePanel extends JPanel implements KeyListener
 	private ArrayList<AudioPlayer> gameSFX;
     private Thread thread;
     private Animation gameState;
+    private String strIsSetHardmode;
     private int amountOfBricks;
     private int ballSize;
     private int dialogResult;
@@ -36,7 +37,7 @@ public class GamePanel extends JPanel implements KeyListener
     private int baseR, baseG, baseB, cR, cG, cB;
     private boolean pressedEnter;
     private boolean lostGame;
-	private boolean isSetHardMode;
+	private boolean boolIsSetHardmode;
 
 	GamePanel()
 	{
@@ -87,17 +88,17 @@ public class GamePanel extends JPanel implements KeyListener
 	private void loadEntities()
 	{
 		entBricks = new ArrayList<>();
-		if(isSetHardMode == false)
+		if(boolIsSetHardmode == false)
 		{
             entPlatform = new Brick(230, 480, 150, 25);
 		}
-		else if(isSetHardMode)
+		else if(boolIsSetHardmode)
 		{
             entPlatform = new Brick(250, 480, 100, 25);
 		}
 
 		entBall = new Ball(290, 420, ballSize, ballSize, "Resources\\Images\\ball.png");
-		entBall.setDifficulty(isSetHardMode);
+		entBall.setDifficulty(boolIsSetHardmode);
 
 		for(int i = 0; i < amountOfBricks; i++)
 		{
@@ -138,12 +139,14 @@ public class GamePanel extends JPanel implements KeyListener
     {
         if(isSetHardMode == false)
         {
-            this.isSetHardMode = isSetHardMode;
+            boolIsSetHardmode = isSetHardMode;
+			strIsSetHardmode  = "NO";
             loadEntities();
         }
         else if(isSetHardMode)
         {
-            this.isSetHardMode = isSetHardMode;
+            boolIsSetHardmode = isSetHardMode;
+            strIsSetHardmode  = "YES";
             loadEntities();
         }
     }
@@ -253,7 +256,7 @@ public class GamePanel extends JPanel implements KeyListener
 
 				gameSFX.get(0).play();
 				
-				if(isSetHardMode)
+				if(boolIsSetHardmode)
 				{
 					gameScore += 2; //increment score by 2 for each block destroyed if in hard mode
 				}
@@ -265,7 +268,7 @@ public class GamePanel extends JPanel implements KeyListener
 				lblGameScore.setText("Score: " + Integer.toString(gameScore)); //show it on the score		
 			}
 
-			if(isSetHardMode)
+			if(boolIsSetHardmode)
 			{
 				if(gameScore == 80) //if hard mode is set then 80 points will trigger the win
 				{
@@ -312,7 +315,7 @@ public class GamePanel extends JPanel implements KeyListener
 					usrInput = usrInput.substring(0, 10);
 				}
 				//usrInput = usrInput.toUpperCase();
-				scoreManager.writeNewScore(usrInput, gameScore, isSetHardMode);
+				scoreManager.writeNewScore(usrInput, gameScore, strIsSetHardmode);
 			}
 		}
 	}
@@ -323,7 +326,7 @@ public class GamePanel extends JPanel implements KeyListener
 
 		if(dialogResult == JOptionPane.NO_OPTION)
 		{
-			gameState.stopGame();
+			thread.interrupt();
 			SwingUtilities.getWindowAncestor(this).dispose();
 		}
 		else if(dialogResult == JOptionPane.YES_OPTION)
