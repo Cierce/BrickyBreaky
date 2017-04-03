@@ -9,7 +9,7 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.util.Random;
 
-import main.OptionsPanel;
+import main.OptionPanel;
 
 public class Brick extends Rectangle //provides us with intersecting and bounds 
 {
@@ -34,7 +34,7 @@ public class Brick extends Rectangle //provides us with intersecting and bounds
 
 		rndGenBallPosition();
 
-		if(OptionsPanel.isSetDifficultyHard())
+		if(OptionPanel.isSetDifficultyHard())
 		{
 			setVelocity(7); //if user has clicked hard difficulty in options
 		}

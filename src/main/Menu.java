@@ -1,19 +1,19 @@
 package main;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.*;
+
+import static javax.swing.BoxLayout.Y_AXIS;
 
 public class Menu
 {
-	private JFrame frmWindow;
+	private JFrame frmMenu;
 	private JDialog frmGame, frmOptions, frmLeaderboard;
-	private JPanel pnlGame;
+	private JPanel pnlMenu;
 	private GamePanel brickyBreaky;
 	private ScoreManagerPanel leaderboard;
-	private OptionsPanel options;
+	private OptionPanel optionMenu;
 	private JButton btnPlay, btnLeaderboard, btnHowToPlay, btnOptions, btnExit;
 	private ImageIcon gameLogo;
 	private Color bgColour;
@@ -34,6 +34,8 @@ public class Menu
 
 	Menu()
 	{
+		gameLogo = new ImageIcon("Resources\\Images\\logo.png");
+		bgColour = new Color(147, 198, 232);
 		loadPanel();
 		loadButtons();
 		loadWindow();
@@ -41,75 +43,64 @@ public class Menu
 
 	private void loadPanel() 
 	{
-		gameLogo = new ImageIcon("Resources\\Images\\logo.png");
-		bgColour = new Color(147, 198, 232);
-		pnlGame = new JPanel();
-		pnlGame.setLayout(new BoxLayout(pnlGame, BoxLayout.Y_AXIS));
-		pnlGame.setBackground(bgColour);
+		pnlMenu = new JPanel();
+		pnlMenu.setLayout(new BoxLayout(pnlMenu, Y_AXIS));
+		pnlMenu.setBackground(bgColour);
 	}
 
 	private void loadWindow()
 	{
-		frmWindow = new JFrame("Bricky Breaky v1.0.7"); 
-		frmWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frmWindow.setSize(350, 250);
-		frmWindow.setResizable(false);
-		frmWindow.setLocationRelativeTo(null);
-		frmWindow.setIconImage(gameLogo.getImage());
-		frmWindow.add(pnlGame);
-		frmWindow.setVisible(true);
+		frmMenu = new JFrame("Bricky Breaky v1.0.7");
+		frmMenu.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmMenu.setSize(350, 250);
+		frmMenu.setResizable(false);
+		frmMenu.setLocationRelativeTo(null);
+		frmMenu.setIconImage(gameLogo.getImage());
+		frmMenu.add(pnlMenu);
+		frmMenu.setVisible(true);
 	}
 
 	private void loadButtons()
 	{
-		pnlGame.add(Box.createRigidArea(new Dimension(0, 30))); //adds a hidden 'box' that creates spacing between components 
-
+		pnlMenu.add(Box.createRigidArea(new Dimension(0, 30))); //adds a hidden 'box' that creates spacing between components
 		btnPlay = new JButton("Play");
-		btnPlay.setBounds(0, 200, 75, 25);
 		btnPlay.setAlignmentX(Component.CENTER_ALIGNMENT);
 		btnPlay.addActionListener(new runGameHandler());
 		btnPlay.setBackground(bgColour);
-		pnlGame.add(btnPlay);
-		pnlGame.add(Box.createRigidArea(new Dimension(0, 10)));  
+		pnlMenu.add(btnPlay);
 
+		pnlMenu.add(Box.createRigidArea(new Dimension(0, 10)));
 		btnLeaderboard = new JButton("Leaderboard");
-		btnLeaderboard.setBounds(0, 200, 75, 25);
 		btnLeaderboard.setAlignmentX(Component.CENTER_ALIGNMENT);
 		btnLeaderboard.addActionListener(new runLeaderboardHandler());
 		btnLeaderboard.setBackground(bgColour);
-		pnlGame.add(btnLeaderboard);
+		pnlMenu.add(btnLeaderboard);
 
-		pnlGame.add(Box.createRigidArea(new Dimension(0, 10)));
-
+		pnlMenu.add(Box.createRigidArea(new Dimension(0, 10)));
 		btnHowToPlay = new JButton("How to Play");
-		btnHowToPlay.setBounds(100, 200, 100, 25);
 		btnHowToPlay.setAlignmentX(Component.CENTER_ALIGNMENT);
 		btnHowToPlay.addActionListener(new guideHandler());
 		btnHowToPlay.setBackground(bgColour);
-		pnlGame.add(btnHowToPlay);
+		pnlMenu.add(btnHowToPlay);
 
-		pnlGame.add(Box.createRigidArea(new Dimension(0, 10))); 
-
+		pnlMenu.add(Box.createRigidArea(new Dimension(0, 10)));
 		btnOptions = new JButton("Options");
-		btnOptions.setBounds(225, 200, 75, 25);
 		btnOptions.setAlignmentX(Component.CENTER_ALIGNMENT);
 		btnOptions.addActionListener(new optionHandler());
 		btnOptions.setBackground(bgColour);
-		pnlGame.add(btnOptions);
+		pnlMenu.add(btnOptions);
 
-		pnlGame.add(Box.createRigidArea(new Dimension(0, 10))); 
-
+		pnlMenu.add(Box.createRigidArea(new Dimension(0, 10)));
 		btnExit = new JButton("Exit");
-		btnExit.setBounds(225, 200, 75, 25);
 		btnExit.setAlignmentX(Component.CENTER_ALIGNMENT);
 		btnExit.addActionListener(new exitHandler());
 		btnExit.setBackground(bgColour);
-		pnlGame.add(btnExit);
+		pnlMenu.add(btnExit);
 	}
 
 	public void loadGame()
 	{
-		frmGame = new JDialog(frmGame, "Bricky Breaky v1.0.7");
+		frmGame = new JDialog(frmGame, "Bricky Breaky v1.0.8");
 		brickyBreaky = new GamePanel();
 		frmGame.add(brickyBreaky);
 		frmGame.setModal(true);
@@ -125,13 +116,12 @@ public class Menu
 	{
 		frmLeaderboard = new JDialog(frmGame, "Leaderboard");
 		leaderboard = new ScoreManagerPanel();
+		leaderboard.setLayout(new BoxLayout(leaderboard, Y_AXIS));
 		frmLeaderboard.add(leaderboard);
 		frmLeaderboard.setModal(true);
 		frmLeaderboard.setIconImage(gameLogo.getImage());
-
 		frmLeaderboard.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frmLeaderboard.setSize(300, 300);
-
 		frmLeaderboard.setLocationRelativeTo(null);
 		frmLeaderboard.setVisible(false);
 		frmLeaderboard.setResizable(false);
@@ -141,14 +131,13 @@ public class Menu
 	private void loadOptions()
 	{
 		frmOptions = new JDialog(frmOptions, "Options Menu");
-		options = new OptionsPanel();
-		frmOptions.add(options);
+		optionMenu = new OptionPanel();
+		optionMenu.setLayout(new BoxLayout(optionMenu, Y_AXIS));
+		frmOptions.add(optionMenu);
 		frmOptions.setModal(true);
 		frmOptions.setIconImage(gameLogo.getImage());
-
 		frmOptions.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frmOptions.setSize(185, 300);
-
 		frmOptions.setLocationRelativeTo(null);
 		frmOptions.setVisible(false);
 		frmOptions.setResizable(false);
@@ -179,7 +168,7 @@ public class Menu
 		public void actionPerformed(ActionEvent event)
 		{
 			JOptionPane.showMessageDialog(
-					frmWindow, 
+					frmMenu,
 					"<html><center>Welcome to Bricky Breaky<br>Move with the A & D or the Left & Right Arrow keys<br>Press the 'Enter' key to start<br>Good luck!</html><center>", 
 					"Instructions", -1);
 		}

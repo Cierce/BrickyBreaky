@@ -1,26 +1,16 @@
 package main;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 
 public class ScoreManagerPanel extends JPanel
 {
 	private static final long serialVersionUID = 5406943106354812340L;
-	private JTextArea txtUsername, txtUserScore, txtUserRank;
-	private JLabel lblTitle, lblColumnDesc;
 	private String[] getScore;
-	private String usrName, usrScore, strUsrRank;
-	private Color bgColour;
-	private int[] intUsrRank;
-	private int maxResultsShown;
 	private File leaderboard;
 	private FileReader readLeaderboard;
 	private BufferedReader bufferLeaderboard;
@@ -29,22 +19,21 @@ public class ScoreManagerPanel extends JPanel
 	private DefaultTableModel model;
 	private JTable tblLeaderboard;
 	private JScrollPane scrollPane;
-	int count;
-	int maxRowDisplay;
-
+	private JButton btnBack;
+	private int driverDataCount;
+	private int maxRowDisplay;
 
 	ScoreManagerPanel() 
 	{
-		this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		loadScoreDB();
 		loadScores();
 		sortScores();
-		//loadLeaderboard();
-		newLeaderboard();
+		loadLeaderboard();
 	}
 
-	private void newLeaderboard()
+	private void loadLeaderboard()
 	{
-		count = 0;
+		driverDataCount = 0;
 		maxRowDisplay = scores.size();
 		String[] tblHeaders = {"USERNAME", "SCORE", "RANK"};
 		String[][] tblData = new String[maxRowDisplay][3];
@@ -53,15 +42,15 @@ public class ScoreManagerPanel extends JPanel
 		{
 			for(int column = 0; column < 3; column++)
 			{
-				if(count == 2)
+				if(driverDataCount == 2)
 				{
 					tblData[row][column] = Integer.toString(row + 1);
-					count = 0;
+					driverDataCount = 0;
 				}
 				else
 				{
-					tblData[row][column] = scores.get(row)[count];
-					count++;
+					tblData[row][column] = scores.get(row)[driverDataCount];
+					driverDataCount++;
 				}
 			}
 		}
@@ -70,21 +59,33 @@ public class ScoreManagerPanel extends JPanel
 		scrollPane = new JScrollPane(tblLeaderboard);
 		this.add(scrollPane);
 
-		JButton btnBack = new JButton("Back");
+		btnBack = new JButton("Back");
 		btnBack.addActionListener(new BackToMenu());
+		btnBack.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		this.add(btnBack);
 	}
 
-	private void loadScores() 
+	public void loadScoreDB()
 	{
-		try 
+		leaderboard = new File("leaderboard.txt");
+		try
+		{
+			readLeaderboard = new FileReader(leaderboard);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		bufferLeaderboard = new BufferedReader(readLeaderboard);
+	}
+
+	private void loadScores()
+	{
+		try
 		{
 			scores = new ArrayList<>();
-			leaderboard = new File("leaderboard.txt");
-			readLeaderboard = new FileReader(leaderboard);
-			bufferLeaderboard = new BufferedReader(readLeaderboard);
 			String line;
-			while((line = bufferLeaderboard.readLine()) != null) 
+			while((line = bufferLeaderboard.readLine()) != null)
 			{
 				if(!(line.equals("")))
 				{
@@ -93,8 +94,8 @@ public class ScoreManagerPanel extends JPanel
 				}
 			}
 			readLeaderboard.close();
-		} 
-		catch (IOException e) 
+		}
+		catch(IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -136,7 +137,6 @@ public class ScoreManagerPanel extends JPanel
 	{
 		try
 		{
-			leaderboard = new File("leaderboard.txt");
 			writeToFile = new FileWriter(leaderboard);
 
 			for(int i = 0; i < scores.size(); i++)
@@ -157,7 +157,6 @@ public class ScoreManagerPanel extends JPanel
 	{
 		try 
 		{
-			leaderboard = new File("leaderboard.txt");
 			writeToFile = new FileWriter(leaderboard, true);
 
 			writeToFile.write("\n" + username + " " + Integer.toString(gameScore));

@@ -1,86 +1,92 @@
 package main;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
-public class OptionsPanel extends JPanel
+public class OptionPanel extends JPanel
 {	
 	private static final long serialVersionUID = -2426397121070482202L;
 
-	private JButton btnTheme1, btnTheme2, btnTheme3, btnDifficulty;
+	private JButton btnTheme1, btnTheme2, btnTheme3, btnDifficulty, btnBack;
 	private JLabel lblThemes, lblDifficulty;
-	protected static boolean choseTheme;
-	protected static int[] themeChoice;
+	private boolean choseTheme;
+	private int[] themeChoice;
 	private static boolean setDifficultyHard;
 	private Color bgColour;
+	private GamePanel gamePanel = new GamePanel();
 
-	public OptionsPanel()
+	public OptionPanel()
 	{
-		loadLabels();
-		loadButtons();
-	}
-	private void loadLabels()
-	{
-		bgColour = new Color(147, 198, 232);
-		lblThemes = new JLabel();
-		lblThemes.setFont(new Font("Helvetica", Font.BOLD, 14));
-		
-		lblDifficulty = new JLabel();
-		lblDifficulty.setFont(new Font("Helvetica", Font.BOLD, 14));
-		setLayout(null);
-		setBackground(bgColour);
-		add(Box.createRigidArea(new Dimension(0, 30))); //adds a hidden 'box' that creates spacing between components
-
-		lblThemes.setText("New Themes");
-		lblThemes.setBounds(50, 5, 125, 25);
-		add(lblThemes);
-
-		lblDifficulty.setText("Difficulty");
-		lblDifficulty.setBounds(60, 125, 125, 25);
-		add(lblDifficulty);
+		loadThemes();
+		loadDifficulties();
+		loadBackButton();
 	}
 	
-	private void loadButtons()
+	private void loadThemes()
 	{
 		choseTheme = false;
-		themeChoice = new int[3];
 		setDifficultyHard = false;
 
-		add(Box.createRigidArea(new Dimension(0, 10))); 
+		bgColour = new Color(147, 198, 232);
+		setBackground(bgColour);
+		add(Box.createRigidArea(new Dimension(0, 10)));
+		lblThemes = new JLabel();
+		lblThemes.setFont(new Font("Helvetica", Font.BOLD, 14));
+		lblThemes.setText("New Themes");
+		lblThemes.setAlignmentX(Component.CENTER_ALIGNMENT);
+		add(lblThemes);
 
 		btnTheme1 = new JButton("Theme 1 - Retro");
-		btnTheme1.setBounds(30, 30, 125, 25);
 		btnTheme1.addActionListener(new SetTheme1());
 		btnTheme1.setBackground(bgColour);
+		btnTheme1.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(btnTheme1);
 
-		add(Box.createRigidArea(new Dimension(0, 10)));  
-
+		add(Box.createRigidArea(new Dimension(0, 10)));
 		btnTheme2 = new JButton("Theme 2 - Mono");
-		btnTheme2.setBounds(30, 60, 125, 25);
 		btnTheme2.addActionListener(new SetTheme2());
 		btnTheme2.setBackground(bgColour);
+		btnTheme2.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(btnTheme2);
 
 		add(Box.createRigidArea(new Dimension(0, 10)));  
 		btnTheme3 = new JButton("Theme 3 - Pink");
-		btnTheme3.setBounds(30, 90, 125, 25);
 		btnTheme3.addActionListener(new SetTheme3());
 		btnTheme3.setBackground(bgColour);
+		btnTheme3.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(btnTheme3);
+	}
+
+	public void loadDifficulties()
+	{
+		add(Box.createRigidArea(new Dimension(0, 10)));
+		lblDifficulty = new JLabel();
+		lblDifficulty.setFont(new Font("Helvetica", Font.BOLD, 14));
+		lblDifficulty.setText("Difficulty");
+		lblDifficulty.setAlignmentX(Component.CENTER_ALIGNMENT);
+		add(lblDifficulty);
 
 		btnDifficulty = new JButton("Hard Mode");
-		btnDifficulty.setBounds(22, 150, 145, 25);
 		btnDifficulty.addActionListener(new HardDifficulty());
 		btnDifficulty.setBackground(bgColour);
+		btnDifficulty.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(btnDifficulty);
+	}
+
+	public void loadBackButton()
+	{
+		add(Box.createRigidArea(new Dimension(0, 70)));
+		btnBack = new JButton("Back");
+		btnBack.addActionListener(new Back());
+		btnBack.setBackground(bgColour);
+		btnBack.setAlignmentX(Component.LEFT_ALIGNMENT);
+		add(btnBack);
+	}
+
+	public void backToMenu()
+	{
+		SwingUtilities.getWindowAncestor(this).dispose();
 	}
 
 	public static boolean isSetDifficultyHard() {
@@ -88,7 +94,27 @@ public class OptionsPanel extends JPanel
 	}
 
 	public static void setSetDifficultyHard(boolean setDifficultyHard) {
-		OptionsPanel.setDifficultyHard = setDifficultyHard;
+		OptionPanel.setDifficultyHard = setDifficultyHard;
+	}
+
+	public void setThemeChoice(int[] themeChoice, boolean choseTheme)
+	{
+		gamePanel = new GamePanel();
+		gamePanel.setThemeChoice(themeChoice, choseTheme);
+	}
+
+	public void themeNotSet()
+	{
+		gamePanel.setNoTheme();
+	}
+
+	class Back implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			backToMenu();
+		}
 	}
 
 	class SetTheme1 implements ActionListener
@@ -101,15 +127,17 @@ public class OptionsPanel extends JPanel
 			{
 				if(btnTheme1.getText().equals("Theme 1 - Retro")  && btnTheme2.getText().equals("Theme 2 - Mono") && btnTheme3.getText().equals("Theme 3 - Pink"))
 				{
-					choseTheme = true;
 					btnTheme1.setText("Theme 1 - Selected");
+					themeChoice = new int[3];
 					themeChoice[0] = 20;
 					themeChoice[1] = 30;
 					themeChoice[2] = 40;
+					setThemeChoice(themeChoice, true);
 				} 
 				else if (btnTheme1.getText().equals("Theme 1 - Selected")) 
 				{
 					btnTheme1.setText("Theme 1 - Retro");
+					themeNotSet();
 				}
 			}
 		}
@@ -121,19 +149,21 @@ public class OptionsPanel extends JPanel
 		public void actionPerformed(ActionEvent e) 
 		{
 			Object source = e.getSource();
-			if(source instanceof JButton) 
+			if(source instanceof JButton)
 			{
 				if(btnTheme2.getText().equals("Theme 2 - Mono") && btnTheme1.getText().equals("Theme 1 - Retro") && btnTheme3.getText().equals("Theme 3 - Pink"))
 				{
-					choseTheme = true;
 					btnTheme2.setText("Theme 2 - Selected");
+					themeChoice = new int[3];
 					themeChoice[0] = 2;
 					themeChoice[1] = 3;
 					themeChoice[2] = 4;
-				} 
-				else if (btnTheme2.getText().equals("Theme 2 - Selected")) 
+					setThemeChoice(themeChoice, true);
+				}
+				else if (btnTheme2.getText().equals("Theme 2 - Selected"))
 				{
 					btnTheme2.setText("Theme 2 - Mono");
+					themeNotSet();
 				}
 			}
 		}
@@ -149,15 +179,17 @@ public class OptionsPanel extends JPanel
 			{
 				if(btnTheme3.getText().equals("Theme 3 - Pink")  && btnTheme1.getText().equals("Theme 1 - Retro") && btnTheme2.getText().equals("Theme 2 - Mono"))
 				{
-					choseTheme = true;
 					btnTheme3.setText("Theme 3 - Selected");
+					themeChoice = new int[3];
 					themeChoice[0] = 12;
-					themeChoice[1] = 53; 
+					themeChoice[1] = 53;
 					themeChoice[2] = 43;
-				} 
-				else if (btnTheme3.getText().equals("Theme 3 - Selected")) 
+					setThemeChoice(themeChoice, true);
+				}
+				else if (btnTheme3.getText().equals("Theme 3 - Selected"))
 				{
 					btnTheme3.setText("Theme 3 - Pink");
+					themeNotSet();
 				}
 			}
 		}

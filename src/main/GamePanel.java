@@ -1,17 +1,13 @@
 package main;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.util.ArrayList;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import animation.Animation;
 import audio.AudioPlayer;
 import entity.Brick;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.ArrayList;
 
 public class GamePanel extends JPanel implements KeyListener
 {
@@ -36,6 +32,7 @@ public class GamePanel extends JPanel implements KeyListener
 	private int baseR, baseG, baseB, cR, cG, cB;
 	private boolean pressedEnter;
 	private boolean lostGame;
+	private boolean boolThemeChoice;
 	private JLabel lblGameScore, lblPressEnter;
 	private ArrayList<AudioPlayer> gameSFX;
 	Thread thread;
@@ -92,7 +89,7 @@ public class GamePanel extends JPanel implements KeyListener
 	{
 		bricks = new ArrayList<>();
 
-		if(OptionsPanel.isSetDifficultyHard())
+		if(OptionPanel.isSetDifficultyHard())
 		{
 			platform = new Brick(250, 480, 100, 25);
 		}
@@ -121,27 +118,38 @@ public class GamePanel extends JPanel implements KeyListener
 		}
 	}
 
+	public void setThemeChoice(int[] themeChoice, boolean themeChosen)
+	{
+		this.themeChoice = new int[3];
+		this.themeChoice[0] = themeChoice[0];
+		this.themeChoice[1] = themeChoice[1];
+		this.themeChoice[2] = themeChoice[2];
+		System.out.println(this.themeChoice[0]);
+		this.boolThemeChoice = themeChosen;
+	}
+
+	public void setNoTheme()
+	{
+		themeChoice = new int[3];
+		themeChoice[0] = 5;
+		themeChoice[1] = 5;
+		themeChoice[2] = 5;
+		boolThemeChoice = false;
+	}
+
 	public void paintComponent(Graphics graphics)
 	{
 		super.paintComponent(graphics); //super keyword reference to the immediate parent class object e.g. the 'Graphics' of the JPanel
-
-		themeChoice = new int[3];
-
 		cR = 0;
 		cG = 0;
 		cB = 0;
 
-		if(OptionsPanel.choseTheme == false)
+		if(boolThemeChoice == false)
 		{
-			themeChoice[0] = 50;
-			themeChoice[1] = 60;
-			themeChoice[2] = 70;
-		}
-		else if(OptionsPanel.choseTheme == true)
-		{
-			themeChoice[0] = OptionsPanel.themeChoice[0];
-			themeChoice[1] = OptionsPanel.themeChoice[1];
-			themeChoice[2] = OptionsPanel.themeChoice[2];
+			themeChoice = new int[3];
+			themeChoice[0] = 5;
+			themeChoice[1] = 5;
+			themeChoice[2] = 5;
 		}
 
 		for(int i = 0; i < bricks.size(); i++)
@@ -244,7 +252,7 @@ public class GamePanel extends JPanel implements KeyListener
 
 				gameSFX.get(0).play();
 				
-				if(OptionsPanel.isSetDifficultyHard())
+				if(OptionPanel.isSetDifficultyHard())
 				{
 					gameScore += 2; //increment score by 2 for each block destroyed if in hard mode
 				}
@@ -256,7 +264,7 @@ public class GamePanel extends JPanel implements KeyListener
 				lblGameScore.setText("Score: " + Integer.toString(gameScore)); //show it on the score		
 			}
 
-			if(OptionsPanel.isSetDifficultyHard())
+			if(OptionPanel.isSetDifficultyHard())
 			{
 				if(gameScore == 80) //if hard mode is set then 80 points will trigger the win
 				{
