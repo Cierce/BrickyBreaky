@@ -1,8 +1,8 @@
 package main;
 import animation.Animation;
 import audio.AudioPlayer;
+import entity.Ball;
 import entity.Brick;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -14,45 +14,44 @@ public class GamePanel extends JPanel implements KeyListener
 	private static final long serialVersionUID = 2884832087031349542L;
 
 	private int[] themeChoice;
-	private ArrayList<Brick> bricks;
-	private Brick platform;
-	private Brick ball;
-	private Brick brick;
+	private ArrayList<Brick> entBricks;
+	private Brick entPlatform;
+	private Ball entBall;
+	private Brick entBrick;
 	private ScoreManagerPanel scoreManager;
 	private String usrInput;
 	private Color platformColour;
 	private Color blockGradient;
-	private int amountOfBricks;
-	private int ballSize;
-	private int dialogResult;
-	private int	gameScore;
-	private int brickWidth;
-	private int brickHeight;
-	private int brickX;
-	private int baseR, baseG, baseB, cR, cG, cB;
-	private boolean pressedEnter;
-	private boolean lostGame;
-	private boolean boolThemeChoice;
 	private JLabel lblGameScore, lblPressEnter;
 	private ArrayList<AudioPlayer> gameSFX;
-	Thread thread;
-	Animation gameState;
+    private Thread thread;
+    private Animation gameState;
+    private int amountOfBricks;
+    private int ballSize;
+    private int dialogResult;
+    private int	gameScore;
+    private int brickWidth;
+    private int brickHeight;
+    private int brickX;
+    private int baseR, baseG, baseB, cR, cG, cB;
+    private boolean pressedEnter;
+    private boolean lostGame;
+	private boolean isSetHardMode;
 
 	GamePanel()
 	{
-		amountOfBricks = 10;
-		ballSize       = 25;
-		dialogResult   = 0;
-		gameScore      = 0;
-		brickWidth     = 60;
-		brickHeight    = 25;
-		brickX 		   = 60;
-		pressedEnter   = false;
-		lostGame       = false;
+		amountOfBricks      = 10;
+		ballSize            = 25;
+		dialogResult        = 0;
+		gameScore           = 0;
+		brickWidth          = 60;
+		brickHeight         = 25;
+		brickX 		        = 60;
+		pressedEnter        = false;
+		lostGame            = false;
 
 		loadSFX();
 		loadLables();
-		drawBricks();
 		
 		addKeyListener(this); //Gives our gamePanel class an event 'KeyListener' that will listen for key strokes
 		setFocusable(true);   //Brings gamePanel to front if it isn't
@@ -85,57 +84,69 @@ public class GamePanel extends JPanel implements KeyListener
 		add(lblPressEnter);
 	}
 
-	private void drawBricks()
+	private void loadEntities()
 	{
-		bricks = new ArrayList<>();
+		entBricks = new ArrayList<>();
+		if(isSetHardMode == false)
+		{
+            entPlatform = new Brick(230, 480, 150, 25);
+		}
+		else if(isSetHardMode)
+		{
+            entPlatform = new Brick(250, 480, 100, 25);
+		}
 
-		if(OptionPanel.isSetDifficultyHard())
-		{
-			platform = new Brick(250, 480, 100, 25);
-		}
-		else
-		{
-			platform = new Brick(230, 480, 150, 25);
-		}
-
-		ball = new Brick(290, 420, ballSize, ballSize, "Resources\\Images\\ball.png");
+		entBall = new Ball(290, 420, ballSize, ballSize, "Resources\\Images\\ball.png");
+		entBall.setDifficulty(isSetHardMode);
 
 		for(int i = 0; i < amountOfBricks; i++)
 		{
-			bricks.add(new Brick(i * brickX, 0, brickWidth, brickHeight));
+			entBricks.add(new Brick(i * brickX, 0, brickWidth, brickHeight));
 		}
 		for(int i = 0; i < amountOfBricks; i++)
 		{
-			bricks.add(new Brick(i * brickX, 25, brickWidth, brickHeight));
+			entBricks.add(new Brick(i * brickX, 25, brickWidth, brickHeight));
 		}
 		for(int i = 0; i < amountOfBricks; i++)
 		{
-			bricks.add(new Brick(i * brickX, 50, brickWidth, brickHeight));
+			entBricks.add(new Brick(i * brickX, 50, brickWidth, brickHeight));
 		}
 		for(int i = 0; i < amountOfBricks; i++)
 		{
-			bricks.add(new Brick(i * brickX, 75, brickWidth, brickHeight));
+			entBricks.add(new Brick(i * brickX, 75, brickWidth, brickHeight));
 		}
 	}
 
-	public void setThemeChoice(int[] themeChoice, boolean themeChosen)
+	public void setThemeChoice(int[] themeChoice, boolean isSetThemeChoice)
 	{
-		this.themeChoice = new int[3];
-		this.themeChoice[0] = themeChoice[0];
-		this.themeChoice[1] = themeChoice[1];
-		this.themeChoice[2] = themeChoice[2];
-		System.out.println(this.themeChoice[0]);
-		this.boolThemeChoice = themeChosen;
+        this.themeChoice = new int[3];
+	    if(isSetThemeChoice == false)
+        {
+            this.themeChoice[0] = 5;
+            this.themeChoice[1] = 5;
+            this.themeChoice[2] = 5;
+        }
+        else if(isSetThemeChoice)
+        {
+            this.themeChoice[0] = themeChoice[0];
+            this.themeChoice[1] = themeChoice[1];
+            this.themeChoice[2] = themeChoice[2];
+        }
 	}
 
-	public void setNoTheme()
-	{
-		themeChoice = new int[3];
-		themeChoice[0] = 5;
-		themeChoice[1] = 5;
-		themeChoice[2] = 5;
-		boolThemeChoice = false;
-	}
+	public void setDifficulty(boolean isSetHardMode)
+    {
+        if(isSetHardMode == false)
+        {
+            this.isSetHardMode = isSetHardMode;
+            loadEntities();
+        }
+        else if(isSetHardMode)
+        {
+            this.isSetHardMode = isSetHardMode;
+            loadEntities();
+        }
+    }
 
 	public void paintComponent(Graphics graphics)
 	{
@@ -144,22 +155,12 @@ public class GamePanel extends JPanel implements KeyListener
 		cG = 0;
 		cB = 0;
 
-		if(boolThemeChoice == false)
+		for(int i = 0; i < entBricks.size(); i++)
 		{
-			themeChoice = new int[3];
-			themeChoice[0] = 5;
-			themeChoice[1] = 5;
-			themeChoice[2] = 5;
-		}
-
-		for(int i = 0; i < bricks.size(); i++)
-		{
-			brick = bricks.get(i);
-
+			entBrick = entBricks.get(i);
 			baseR = themeChoice[0];
 			baseG = themeChoice[1];
 			baseB = themeChoice[2];
-
 			cR += baseR;
 			cG += baseG;
 			cB += baseB;
@@ -178,51 +179,51 @@ public class GamePanel extends JPanel implements KeyListener
 			}
 
 			blockGradient = new Color(cR, cG, cB);
-			brick.drawBrick(graphics, blockGradient);
+			entBrick.drawBrick(graphics, blockGradient);
 		}
 		setBackground(blockGradient);
-		ball.drawBall(graphics, this);
+		entBall.drawBall(graphics, this);
 
 		platformColour = new Color(245, 245, 245);
-		platform.drawBrick(graphics, platformColour);
+		entPlatform.drawBrick(graphics, platformColour);
 	}
 
 	public void update()
 	{
 		/*LEFT EDGE
-		 * If the ball is off the left edge we set the direction_x to be the velocity
+		 * If the entBall is off the left edge we set the direction_x to be the velocity
 		 * which we set in the class to be 3 by default
-		 * If the ball touches the left edge we set the direction to be positive 
+		 * If the entBall touches the left edge we set the direction to be positive
 		 */
-		if(ball.x < 0)
+		if(entBall.x < 0)
 		{
-			ball.setDirectionX(ball.getVelocity());
+			entBall.setDirectionX(entBall.getVelocity());
 		}
 
 		/*RIGHT EDGE
-		 * This time we are the opposite, if the ball's x position is off the right edge
+		 * This time we are the opposite, if the entBall's x position is off the right edge
 		 * we set the direction to be negative velocity
 		 */
-		if(ball.x > getWidth() - ballSize)
+		if(entBall.x > getWidth() - ballSize)
 		{
-			ball.setDirectionX(- (ball.getVelocity()));
+			entBall.setDirectionX(- (entBall.getVelocity()));
 		}
 
 		/*UPPER EDGE
 		 * Here we're doing the same but now for the upper edge, the only difference is now we're setting
 		 * the direction of the Y_axis by using direction_y
 		 */
-		if(ball.y < 0)
+		if(entBall.y < 0)
 		{
-			ball.setDirectionY(+ ball.getVelocity());
+			entBall.setDirectionY(+ entBall.getVelocity());
 		}
 
 		/*LOWER EDGE
 		 * Here we're doing the exact opposite of the upper edge
 		 * However it's disabled for now because it's apart of the loss condition
-		 * ball.direction_y = -(ball.velocity);
+		 * entBall.direction_y = -(entBall.velocity);
 		 */
-		if(ball.y > getHeight() - ballSize)
+		if(entBall.y > getHeight() - ballSize)
 		{
 			if(lostGame == false)
 			{
@@ -237,22 +238,22 @@ public class GamePanel extends JPanel implements KeyListener
 			}
 		}
 
-		//The direction of the ball is determined after it goes through the if statements
-		ball.x += ball.getDirectionX();
-		ball.y += ball.getDirectionY();
+		//The direction of the entBall is determined after it goes through the if statements
+		entBall.x += entBall.getDirectionX();
+		entBall.y += entBall.getDirectionY();
 
-		for(int i = 0; i < bricks.size(); i++)
+		for(int i = 0; i < entBricks.size(); i++)
 		{
-			brick = bricks.get(i);
+			entBrick = entBricks.get(i);
 
-			if(ball.intersects(brick) && !brick.isDestroyed())
+			if(entBall.intersects(entBrick) && !entBrick.isDestroyed())
 			{
-				brick.setDestroyed(true);
-				ball.setDirectionY(ball.getVelocity());
+				entBrick.setDestroyed(true);
+				entBall.setDirectionY(entBall.getVelocity());
 
 				gameSFX.get(0).play();
 				
-				if(OptionPanel.isSetDifficultyHard())
+				if(isSetHardMode)
 				{
 					gameScore += 2; //increment score by 2 for each block destroyed if in hard mode
 				}
@@ -264,7 +265,7 @@ public class GamePanel extends JPanel implements KeyListener
 				lblGameScore.setText("Score: " + Integer.toString(gameScore)); //show it on the score		
 			}
 
-			if(OptionPanel.isSetDifficultyHard())
+			if(isSetHardMode)
 			{
 				if(gameScore == 80) //if hard mode is set then 80 points will trigger the win
 				{
@@ -286,11 +287,11 @@ public class GamePanel extends JPanel implements KeyListener
 			}
 		}
 
-		if(ball.intersects(platform))
+		if(entBall.intersects(entPlatform))
 		{
 			lblPressEnter.setText("");
 			gameSFX.get(1).play();
-			ball.setDirectionY(-(ball.getVelocity()));
+			entBall.setDirectionY(-(entBall.getVelocity()));
 		}
 		repaint();	//repaints 'this' every tick
 	}
@@ -311,7 +312,7 @@ public class GamePanel extends JPanel implements KeyListener
 					usrInput = usrInput.substring(0, 10);
 				}
 				//usrInput = usrInput.toUpperCase();
-				scoreManager.writeNewScore(usrInput, gameScore);
+				scoreManager.writeNewScore(usrInput, gameScore, isSetHardMode);
 			}
 		}
 	}
@@ -333,8 +334,8 @@ public class GamePanel extends JPanel implements KeyListener
 
 	private void resetGame()
 	{
-		bricks.clear();
-		drawBricks();
+		entBricks.clear();
+		loadEntities();
 		lostGame  = false;
 		gameScore = 0;
 		lblGameScore.setText("Score: 0");
@@ -351,11 +352,11 @@ public class GamePanel extends JPanel implements KeyListener
 		}
 		if((e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT))
 		{
-			platform.x -= 60;
+			entPlatform.x -= 60;
 		}
-		if((e.getKeyCode() == KeyEvent.VK_D ||e.getKeyCode() == KeyEvent.VK_RIGHT) && platform.x < (getWidth() - platform.width))
+		if((e.getKeyCode() == KeyEvent.VK_D ||e.getKeyCode() == KeyEvent.VK_RIGHT) && entPlatform.x < (getWidth() - entPlatform.width))
 		{
-			platform.x += 60;
+			entPlatform.x += 60;
 		}
 		if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
 		{

@@ -1,4 +1,5 @@
 package main;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -11,48 +12,49 @@ public class ScoreManagerPanel extends JPanel
 {
 	private static final long serialVersionUID = 5406943106354812340L;
 	private String[] getScore;
-	private File leaderboard;
-	private FileReader readLeaderboard;
-	private BufferedReader bufferLeaderboard;
+	private File ldrBrdDataStore;
+	private FileReader readLdrBrdData;
+	private BufferedReader ldrBrdBuffer;
 	private FileWriter writeToFile;
 	private ArrayList<String[]> scores;
 	private DefaultTableModel model;
 	private JTable tblLeaderboard;
 	private JScrollPane scrollPane;
 	private JButton btnBack;
-	private int driverDataCount;
+	private int userScoreIndex;
 	private int maxRowDisplay;
+	private String hardMode;
+	private ArrayList<String[]> scoresSorted;
 
-	ScoreManagerPanel() 
+	ScoreManagerPanel()
 	{
 		loadScoreDB();
 		loadScores();
 		sortScores();
 		loadLeaderboard();
+        writeSortedScores();
 	}
 
 	private void loadLeaderboard()
 	{
-		driverDataCount = 0;
-		maxRowDisplay = scores.size();
-		String[] tblHeaders = {"USERNAME", "SCORE", "RANK"};
-		String[][] tblData = new String[maxRowDisplay][3];
+		userScoreIndex = 0;
+		maxRowDisplay  = scores.size();
+		String[] tblHeaders = {"USERNAME", "SCORE", "HARD MODE", "RANK"};
+		String[][] tblData = new String[maxRowDisplay][tblHeaders.length];
 
 		for(int row = 0; row < maxRowDisplay; row++)
 		{
-			for(int column = 0; column < 3; column++)
+			for(int column = 0; column < tblHeaders.length; column++)
 			{
-				if(driverDataCount == 2)
-				{
-					tblData[row][column] = Integer.toString(row + 1);
-					driverDataCount = 0;
-				}
-				else
-				{
-					tblData[row][column] = scores.get(row)[driverDataCount];
-					driverDataCount++;
-				}
-			}
+               if(column == 3)
+               {
+                   tblData[row][column] = Integer.toString((row + 1));
+               }
+               else
+               {
+                   tblData[row][column] = scores.get(row)[column].toUpperCase();
+               }
+            }
 		}
 		model = new DefaultTableModel(tblData, tblHeaders);
 		tblLeaderboard = new JTable(model);
@@ -67,16 +69,16 @@ public class ScoreManagerPanel extends JPanel
 
 	public void loadScoreDB()
 	{
-		leaderboard = new File("leaderboard.txt");
+		ldrBrdDataStore = new File("ldrBrdDataStore.txt");
 		try
 		{
-			readLeaderboard = new FileReader(leaderboard);
+			readLdrBrdData = new FileReader(ldrBrdDataStore);
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		bufferLeaderboard = new BufferedReader(readLeaderboard);
+		ldrBrdBuffer = new BufferedReader(readLdrBrdData);
 	}
 
 	private void loadScores()
@@ -85,7 +87,7 @@ public class ScoreManagerPanel extends JPanel
 		{
 			scores = new ArrayList<>();
 			String line;
-			while((line = bufferLeaderboard.readLine()) != null)
+			while((line = ldrBrdBuffer.readLine()) != null)
 			{
 				if(!(line.equals("")))
 				{
@@ -93,7 +95,7 @@ public class ScoreManagerPanel extends JPanel
 					scores.add(lineContents);
 				}
 			}
-			readLeaderboard.close();
+			readLdrBrdData.close();
 		}
 		catch(IOException e)
 		{
@@ -104,18 +106,18 @@ public class ScoreManagerPanel extends JPanel
 	/**
 	 * Sort scores from highest to lowest
 	 */
-	private void sortScores() 
+	private void sortScores()
 	{
 		// Create a copy of the scores array
-		ArrayList<String[]> scoresSorted = this.scores;
-		if (scoresSorted.size() > 1) 
+		scoresSorted  = scores;
+		if (scoresSorted.size() > 1)
 		{
-			for (int x = 0; x < scoresSorted.size(); x++) 
+			for (int x = 0; x < scoresSorted.size(); x++)
 			{
-				for (int i = 0; i < scoresSorted.size() - x - 1; i++) 
+				for (int i = 0; i < scoresSorted.size() - x - 1; i++)
 				{
 					// _scores[i][name][score][rank]
-					if (Integer.parseInt(scoresSorted.get(i)[1]) < Integer.parseInt(scoresSorted.get(i + 1)[1])) 
+					if (Integer.parseInt(scoresSorted.get(i)[1]) < Integer.parseInt(scoresSorted.get(i + 1)[1]))
 					{
 						// Store n+1th element into a temporary variable
 						String[] tmp = scoresSorted.get(i+1);
@@ -129,20 +131,19 @@ public class ScoreManagerPanel extends JPanel
 			}
 		}
 		// overwrite the scores array with the new sorted list
-		this.scores = scoresSorted;
-		writeSortedScores();
+		scores = scoresSorted;
 	}
 
 	public void writeSortedScores()
 	{
 		try
 		{
-			writeToFile = new FileWriter(leaderboard);
+			writeToFile = new FileWriter(ldrBrdDataStore);
 
 			for(int i = 0; i < scores.size(); i++)
 			{
 				getScore = scores.get(i);
-				writeToFile.write("\n" + getScore[0] + " " + Integer.parseInt(getScore[1]));
+				writeToFile.write("\n" + getScore[0] + " " + Integer.parseInt(getScore[1]) + " " + getScore[2]);
 			}
 			writeToFile.flush();
 			writeToFile.close();
@@ -153,17 +154,16 @@ public class ScoreManagerPanel extends JPanel
 		}
 	}
 
-	public void writeNewScore(String username, int gameScore)
+	public void writeNewScore(String username, int gameScore, boolean isSetHardmode)
 	{
-		try 
+		try
 		{
-			writeToFile = new FileWriter(leaderboard, true);
-
-			writeToFile.write("\n" + username + " " + Integer.toString(gameScore));
+			writeToFile = new FileWriter(ldrBrdDataStore, true);
+			writeToFile.write("\n" + username + " " + Integer.toString(gameScore) + " " + isSetHardmode);
 			writeToFile.flush();
 			writeToFile.close();
-		} 
-		catch (IOException e) 
+		}
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}

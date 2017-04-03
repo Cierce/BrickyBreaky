@@ -1,4 +1,5 @@
 package main;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -12,12 +13,12 @@ public class OptionPanel extends JPanel
 	private JLabel lblThemes, lblDifficulty;
 	private boolean choseTheme;
 	private int[] themeChoice;
-	private static boolean setDifficultyHard;
 	private Color bgColour;
-	private GamePanel gamePanel = new GamePanel();
+	private MainMenu mainMenu;
 
 	public OptionPanel()
 	{
+        mainMenu = new MainMenu();
 		loadThemes();
 		loadDifficulties();
 		loadBackButton();
@@ -25,9 +26,6 @@ public class OptionPanel extends JPanel
 	
 	private void loadThemes()
 	{
-		choseTheme = false;
-		setDifficultyHard = false;
-
 		bgColour = new Color(147, 198, 232);
 		setBackground(bgColour);
 		add(Box.createRigidArea(new Dimension(0, 10)));
@@ -89,24 +87,15 @@ public class OptionPanel extends JPanel
 		SwingUtilities.getWindowAncestor(this).dispose();
 	}
 
-	public static boolean isSetDifficultyHard() {
-		return setDifficultyHard;
-	}
-
-	public static void setSetDifficultyHard(boolean setDifficultyHard) {
-		OptionPanel.setDifficultyHard = setDifficultyHard;
-	}
-
 	public void setThemeChoice(int[] themeChoice, boolean choseTheme)
-	{
-		gamePanel = new GamePanel();
-		gamePanel.setThemeChoice(themeChoice, choseTheme);
-	}
+    {
+        mainMenu.setThemeChoice(themeChoice, choseTheme);
+    }
 
-	public void themeNotSet()
-	{
-		gamePanel.setNoTheme();
-	}
+	public void setDifficultyType(boolean isSetHardMode)
+    {
+        mainMenu.setDifficultyType(isSetHardMode);
+    }
 
 	class Back implements ActionListener
 	{
@@ -132,12 +121,12 @@ public class OptionPanel extends JPanel
 					themeChoice[0] = 20;
 					themeChoice[1] = 30;
 					themeChoice[2] = 40;
-					setThemeChoice(themeChoice, true);
+                    setThemeChoice(themeChoice, true);
 				} 
 				else if (btnTheme1.getText().equals("Theme 1 - Selected")) 
 				{
 					btnTheme1.setText("Theme 1 - Retro");
-					themeNotSet();
+                    setThemeChoice(themeChoice, false);
 				}
 			}
 		}
@@ -163,7 +152,7 @@ public class OptionPanel extends JPanel
 				else if (btnTheme2.getText().equals("Theme 2 - Selected"))
 				{
 					btnTheme2.setText("Theme 2 - Mono");
-					themeNotSet();
+                    setThemeChoice(themeChoice, false);
 				}
 			}
 		}
@@ -189,7 +178,7 @@ public class OptionPanel extends JPanel
 				else if (btnTheme3.getText().equals("Theme 3 - Selected"))
 				{
 					btnTheme3.setText("Theme 3 - Pink");
-					themeNotSet();
+                    setThemeChoice(themeChoice, false);
 				}
 			}
 		}
@@ -206,13 +195,13 @@ public class OptionPanel extends JPanel
 			{
 				if(btnDifficulty.getText().equals("Hard Mode"))
 				{
-					setSetDifficultyHard(true);
+                   setDifficultyType(true);
 					JOptionPane.showMessageDialog(this, "<html><center>Hard mode is for experienced players only;<br>bricks broke give x2 the points!</center></html>", "CAUTION!", 2);
 					btnDifficulty.setText("Hard Mode - Selected");
 				} 
 				else if (btnDifficulty.getText().equals("Hard Mode - Selected")) 
 				{
-					setSetDifficultyHard(false);
+                    setDifficultyType(false);
 					btnDifficulty.setText("Hard Mode");
 				}
 			}

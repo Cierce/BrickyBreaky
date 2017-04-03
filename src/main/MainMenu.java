@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 
 import static javax.swing.BoxLayout.Y_AXIS;
 
-public class Menu
+public class MainMenu
 {
 	private JFrame frmMenu;
 	private JDialog frmGame, frmOptions, frmLeaderboard;
@@ -17,13 +17,15 @@ public class Menu
 	private JButton btnPlay, btnLeaderboard, btnHowToPlay, btnOptions, btnExit;
 	private ImageIcon gameLogo;
 	private Color bgColour;
+	private int[] themeChoice;
+	private boolean isSetTheme, isSetHardMode;
 	
 	public static void main(String[] args) 
 	{
 		try 
 		{
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); //documentation http://docs.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-			new Menu();
+			new MainMenu();
 		} 
 		catch(ClassNotFoundException | InstantiationException | IllegalAccessException| UnsupportedLookAndFeelException e) 
 		{
@@ -32,10 +34,13 @@ public class Menu
 		}
 	}
 
-	Menu()
+	MainMenu()
 	{
-		gameLogo = new ImageIcon("Resources\\Images\\logo.png");
-		bgColour = new Color(147, 198, 232);
+		gameLogo         = new ImageIcon("Resources\\Images\\logo.png");
+		bgColour         = new Color(147, 198, 232);
+        isSetTheme       = false; //by default we assume that the player has not set a theme in the options menu
+        isSetHardMode    = false; //same for the games difficulty
+
 		loadPanel();
 		loadButtons();
 		loadWindow();
@@ -98,6 +103,17 @@ public class Menu
 		pnlMenu.add(btnExit);
 	}
 
+	public void setThemeChoice(int[] themeChoice, boolean isSetTheme)
+	{
+		this.themeChoice = themeChoice;
+        this.isSetTheme  = isSetTheme;
+	}
+
+	public void setDifficultyType(boolean isSetHardMode)
+    {
+        this.isSetHardMode = isSetHardMode;
+    }
+
 	public void loadGame()
 	{
 		frmGame = new JDialog(frmGame, "Bricky Breaky v1.0.8");
@@ -110,6 +126,8 @@ public class Menu
 		frmGame.setLocationRelativeTo(null);
 		frmGame.setVisible(false);
 		frmGame.setResizable(false);
+		brickyBreaky.setThemeChoice(themeChoice, isSetTheme);
+		brickyBreaky.setDifficulty(isSetHardMode);
 	}
 
 	private void loadLeaderboard()
@@ -130,7 +148,7 @@ public class Menu
 
 	private void loadOptions()
 	{
-		frmOptions = new JDialog(frmOptions, "Options Menu");
+		frmOptions = new JDialog(frmOptions, "Options MainMenu");
 		optionMenu = new OptionPanel();
 		optionMenu.setLayout(new BoxLayout(optionMenu, Y_AXIS));
 		frmOptions.add(optionMenu);
