@@ -1,101 +1,137 @@
 package main;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * This extends JPanel allows it to add component elements directly to this due to inheritance. 
+ * <br>This provides the player with the Leaderboard graphical user interface.
+ * @author Connor Phillips
+ * @version 1.0
+ * @since 1.0
+ */
 public class ScoreManagerPanel extends JPanel
 {
-	private static final long serialVersionUID = 5406943106354812340L;
-	private String[] getScore;
-	private File ldrBrdDataStore;
-	private FileReader readLdrBrdData;
-	private BufferedReader ldrBrdBuffer;
-	private FileWriter writeToFile;
-	private ArrayList<String[]> scores;
-	private DefaultTableModel model;
-	private JTable tblLeaderboard;
-	private JScrollPane scrollPane;
-	private JButton btnBack;
-	private int userScoreIndex;
-	private int maxRowDisplay;
-	private String hardMode;
-	private ArrayList<String[]> scoresSorted;
+	private static final long serialVersionUID = 5406943106354812340L; //long serialVersionUID stores the serialVersionUID generated value
+	private File ldrBrdDataStore;             //File ldrBrdDataStore stores the name of the leaderboard txt file
+	private FileReader readLdrBrdData;        //FileReader readLdrBrdData reads in the var ldrBrdDataStore 
+	private BufferedReader ldrBrdBuffer;      //BufferedReader ldrBrdBuffer buffers the ldrBrdDataStore var
+	private FileWriter writeToFile;           //FileWriter writeToFile allows us to write to our leaderboard txt file
+	private JTable tblLeaderboard;            //JTable tblLeaderboard declaes a new instance of JTable that we use as the leaderboard GUI
+	private JScrollPane scrollPane;           //JScrollPane scrollPane this is the scrollPane we use with the JTable when we get x amount of players loaded
+	private DefaultTableModel tblLdrBrdModel; //DefaultTableModel tblLdrBrdModel is the model for our JTable  
+	private JButton btnBack;                  //JButton btnBack allows the player to go back to the MainMenu
+	private Color bgColour;                   //Color bgColour stores the background colour
+	private String currentLine;               //String currentLine stores the current line read in from the txt file 
+	private String[] currentScore;            //String[] currentScore stores the current score from var 'scores'
+	private String[] tblHeaders;              //String[] tblHeaders stores the headers for our JTable
+	private String[][] tblData;               //String[][] tblData stores all of our player's username, score and if they played in hardmode to be used with the JTable
+	private ArrayList<String[]> playerData;   //ArrayList<String[]> playerData stores all of our player's data
+	private int maxRowDisplay;                //int maxRowDisplay stores the maximum amount of rows we will display
 
+	/**
+	 * This constructor will call the member functions that load the leaderboard file, load the player data,
+	 * <br>sort the players data and then write it back to the leaderboard file.
+	 */
 	ScoreManagerPanel()
 	{
-		loadLeaderBoardData();
-		loadScores();
-		sortScores();
-		loadLeaderboard();
-        writeSortedScores();
+		loadLeaderboardFile();
+		loadPlayerData();
+		sortPlayerData();
+		writeSortedPlayerData();
 	}
 
-	private void loadLeaderboard()
+	/**
+	 * This member function displays the JTable with all of the respective player data [name][score][hardmode] 
+	 * <br>and it displays the back button.
+	 */
+	public void displayLeaderboard()
 	{
-		userScoreIndex = 0;
-		maxRowDisplay  = scores.size();
-		String[] tblHeaders = {"RANK", "USERNAME", "SCORE", "HARD MODE"};
-		String[][] tblData = new String[maxRowDisplay][tblHeaders.length];
+		maxRowDisplay = playerData.size();
+		tblHeaders = new String[]{"RANK", "USERNAME", "SCORE", "HARD MODE"};
+		tblData = new String[maxRowDisplay][tblHeaders.length];
 
 		for(int row = 0; row < maxRowDisplay; row++)
 		{
 			for(int column = 0; column < tblHeaders.length; column++)
 			{
-               if(column == 0)
-               {
-                   tblData[row][column] = Integer.toString((row + 1));
-               }
-               else
-               {
-                   tblData[row][column] = scores.get(row)[column - 1];
-               }
-            }
+				if(column == 0)
+				{
+					tblData[row][column] = Integer.toString((row + 1));
+				}
+				else
+				{
+					tblData[row][column] = playerData.get(row)[column - 1];
+				}
+			}
 		}
-		model = new DefaultTableModel(tblData, tblHeaders);
-		tblLeaderboard = new JTable(model);
+		
+		bgColour = new Color(147, 198, 232);
+
+		tblLdrBrdModel = new DefaultTableModel(tblData, tblHeaders);
+		tblLeaderboard = new JTable(tblLdrBrdModel);
 		tblLeaderboard.setEnabled(false);
 		tblLeaderboard.getTableHeader().setReorderingAllowed(false);
 		tblLeaderboard.getTableHeader().setResizingAllowed(false);
 		scrollPane = new JScrollPane(tblLeaderboard);
+		tblLeaderboard.setBackground(new Color(155, 209, 245));
 		this.add(scrollPane);
 
 		btnBack = new JButton("Back");
-		btnBack.addActionListener(new BackToMenu());
+		btnBack.addActionListener(new BackToMenuHandler());
 		btnBack.setAlignmentX(Component.RIGHT_ALIGNMENT);
+		btnBack.setBackground(bgColour);
 		this.add(btnBack);
+		this.setBackground(bgColour);
 	}
-
-	public void loadLeaderBoardData()
+	
+	/**
+	 * This member function loads the leaderboard data store and buffers the file for use.
+	 */
+	private void loadLeaderboardFile()
 	{
 		ldrBrdDataStore = new File("ldrBrdDataStore.txt");
 		try
 		{
 			readLdrBrdData = new FileReader(ldrBrdDataStore);
+			ldrBrdBuffer   = new BufferedReader(readLdrBrdData);
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		ldrBrdBuffer = new BufferedReader(readLdrBrdData);
 	}
 
-	private void loadScores()
+	/**
+	 * This member function loads the player data from the leaderboard data store.
+	 */
+	private void loadPlayerData()
 	{
 		try
 		{
-			scores = new ArrayList<>();
-			String line;
-			while((line = ldrBrdBuffer.readLine()) != null)
+			playerData = new ArrayList<>();
+			while((currentLine = ldrBrdBuffer.readLine()) != null)
 			{
-				if(!(line.equals("")))
+				if(!(currentLine.equals("")))
 				{
-					String[] lineContents = line.split("\\s+");
-					scores.add(lineContents);
+					String[] lineContents = currentLine.split("\\s+");
+					playerData.add(lineContents);
 				}
 			}
 			readLdrBrdData.close();
@@ -107,46 +143,43 @@ public class ScoreManagerPanel extends JPanel
 	}
 
 	/**
-	 * Sort scores from highest to lowest
+	 * This member function sorts the player's score from highest to lowest.
 	 */
-	private void sortScores()
+	private void sortPlayerData()
 	{
-		// Create a copy of the scores array
-		scoresSorted  = scores;
-		if (scoresSorted.size() > 1)
+		ArrayList<String[]> sortedPlayerData = playerData;
+		if (sortedPlayerData.size() > 1)
 		{
-			for (int x = 0; x < scoresSorted.size(); x++)
+			for (int x = 0; x < sortedPlayerData.size(); x++)
 			{
-				for (int i = 0; i < scoresSorted.size() - x - 1; i++)
+				for (int i = 0; i < sortedPlayerData.size() - x - 1; i++)
 				{
-					// _scores[i][name][score][rank]
-					if (Integer.parseInt(scoresSorted.get(i)[1]) < Integer.parseInt(scoresSorted.get(i + 1)[1]))
+					// _sortedPlayerData[i][name][score][hardmode]
+					if (Integer.parseInt(sortedPlayerData.get(i)[1]) < Integer.parseInt(sortedPlayerData.get(i + 1)[1]))
 					{
-						// Store n+1th element into a temporary variable
-						String[] tmp = scoresSorted.get(i+1);
-						// Set the new n+1th element to be current n
-						scoresSorted.set(i+1, scoresSorted.get(i));
-						// Set current n to be the old n+1 element
-						scoresSorted.set(i, tmp);
-						// This acts as a simple way to 'swap' elements around
+						String[] tmp = sortedPlayerData.get(i+1);
+						sortedPlayerData.set(i+1, sortedPlayerData.get(i));
+						sortedPlayerData.set(i, tmp);
 					}
 				}
 			}
 		}
-		// overwrite the scores array with the new sorted list
-		scores = scoresSorted;
+		playerData = sortedPlayerData;
 	}
 
-	public void writeSortedScores()
+	/**
+	 * This member function writes the sorted player data to the leaderboard data store.
+	 */
+	private void writeSortedPlayerData()
 	{
 		try
 		{
 			writeToFile = new FileWriter(ldrBrdDataStore);
 
-			for(int i = 0; i < scores.size(); i++)
+			for(int i = 0; i < playerData.size(); i++)
 			{
-				getScore = scores.get(i);
-				writeToFile.write("\n" + getScore[0] + " " + Integer.parseInt(getScore[1]) + " " + getScore[2]);
+				currentScore = playerData.get(i);
+				writeToFile.write("\n" + currentScore[0] + " " + Integer.parseInt(currentScore[1]) + " " + currentScore[2]);
 			}
 			writeToFile.flush();
 			writeToFile.close();
@@ -157,7 +190,13 @@ public class ScoreManagerPanel extends JPanel
 		}
 	}
 
-	public void writeNewScore(String username, int gameScore, String isSetHardmode)
+	/**
+	 * This member function writes new player data to the leaderboard data store.
+	 * @param username String Expects the username of the player
+	 * @param gameScore int Expects the score of the player
+	 * @param isSetHardmode String Expects if they played in hardmode or not
+	 */
+	public void writeNewPlayer(String username, int gameScore, String isSetHardmode)
 	{
 		try
 		{
@@ -172,27 +211,26 @@ public class ScoreManagerPanel extends JPanel
 		}
 	}
 
-	public void closePanel()
+	/**
+	 * This member function closes this object.
+	 */
+	private void backToMenu()
 	{
 		SwingUtilities.getWindowAncestor(this).dispose();
 	}
 
-	/*
-	 * Check if the given score should be on the on the leader board by checking
-	 * if the given score is greater than the lowest current score
-	 * @param score
+	/**
+	 * This handler will call ScoreManagerPanel member function 'backToMenu'.
+	 * @author Connor Phillips
+	 * @version 1.0
+	 * @since 1.0
 	 */
-	public boolean checkScore(int score)
-	{
-		return (score > Integer.parseInt(this.scores.get(this.scores.size())[1]));
-	}
-
-	class BackToMenu implements ActionListener
+	private class BackToMenuHandler implements ActionListener
 	{
 		@Override
 		public void actionPerformed(ActionEvent accEvent)
 		{
-			closePanel();
+			backToMenu();
 		}
 	}
 }

@@ -1,100 +1,139 @@
 package main;
-import animation.Animation;
+import animation.AnimatePane;
 import audio.AudioPlayer;
 import entity.Ball;
 import entity.Brick;
-import javax.swing.*;
-import java.awt.*;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
+/**
+ * This extends JPanel and implements KeyListener.
+ * <br>It allows this to have keyboard interaction with the player,
+ * as well as adding component element directly to this due to inheritance.
+ * <br>This provides the player with the BrickyBreaky game graphical user interface. 
+ * @author Connor Phillips
+ * @version 1.0
+ * @since 1.0
+ */
 public class GamePanel extends JPanel implements KeyListener
 {
-	private static final long serialVersionUID = 2884832087031349542L;
+	private static final long serialVersionUID = 2884832087031349542L; //long serialVersionUID stores the serialVersionUID generated value
 
-	private int[] themeChoice;
-	private ArrayList<Brick> entBricks;
-	private Brick entPlatform;
-	private Ball entBall;
-	private Brick entBrick;
-	private ScoreManagerPanel scoreManager;
-	private String usrInput;
-	private Color platformColour;
-	private Color blockGradient;
-	private JLabel lblGameScore, lblPressEnter;
-	private ArrayList<AudioPlayer> gameSFX;
-    private Thread thread;
-    private Animation gameState;
-    private String strIsSetHardmode;
-    private int amountOfBricks;
-    private int ballSize;
-    private int dialogResult;
-    private int	gameScore;
-    private int brickWidth;
-    private int brickHeight;
-    private int brickX;
-    private int baseR, baseG, baseB, cR, cG, cB;
-    private boolean pressedEnter;
-    private boolean lostGame;
-	private boolean boolIsSetHardmode;
+	private ArrayList<Brick> entBricks;     //ArrayList<Brick> entBricks stores an ArrayList of Brick objects
+	private ArrayList<AudioPlayer> gameSFX; //ArrayList<AudioPlayer> gameSFX stores an ArrayList of AudioPlayer objects
+	private ScoreManagerPanel scoreManager; //ScoreManagerPanel scoreManager declares an instance of the object ScoreManagerPanel
+	private Brick entPlatform;              //Brick entPlatform declares an instance of the object Brick
+	private Brick entBrick;                 //Brick entBrick declares an instance of the object Brick
+	private Ball entBall;                   //Ball entBall declares an instance of the object Ball
+	private Thread gameThread;              //Thread gameThread declares an instance of the object Thread
+	private AnimatePane gameState;          //AnimatePane gameState declares an instance of the object AnimatePane
+	private JLabel lblGameScore;            //JLabel lblGameScore displays the players score
+	private JLabel lblPressEnter;           //JLabel lblPressEnter displays the enter key message
+	private String playerName;              //String playerName stores the players name
+	private String strIsSetHardmode;        //String strIsSetHardmode stores if hard mode was turned on (YES) or off (NO)
+	private int amountOfBricks;             //int amountOfBricks stores the amount of bricks to be created
+	private int ballSize;                   //int ballSize stores the size of the ball
+	private int playAgain;                  //int playAgain stores if the player selected to play again or not
+	private int	gameScore;                  //int gameScore stores the players score
+	private int brickWidth;                 //int brickWidth stores the width of the Brick object
+	private int brickHeight;                //int brickHeight stores the Height of the Brick object
+	private int[] baseRGBVal;               //int[] baseRGBVal stores the base RGB values [0] = red, [1] = green, [2] = blue
+	private int[] crntRGBVal;               //int[] crntRGBVal stores the current RGB values [0] = red, [1] = green, [2] = blue
+	private int[] themeChoice;              //int[] themeChoice stores the players chosen theme from the options panel 
+	private boolean pressedEnter;           //boolean pressedEnter stores if the player has pressed the enter key or not
+	private boolean lostGame;               //boolean lostGame stores if the player has lost the game or not
+	private boolean boolIsSetHardmode;      //boolean boolIsSetHardmode stores if hardmode has been turned on or not
+	private boolean hasPlayerWon;           //boolean hasPlayerWon stores if the player has won the game or not
 
+	/**
+	 * This constructor sets the default values for the game, loads the sound effects and this' labels.
+	 */
 	GamePanel()
 	{
-		amountOfBricks      = 10;
-		ballSize            = 25;
-		dialogResult        = 0;
-		gameScore           = 0;
-		brickWidth          = 60;
-		brickHeight         = 25;
-		brickX 		        = 60;
-		pressedEnter        = false;
-		lostGame            = false;
-
+		initaliseValues();
 		loadSFX();
-		loadLables();
-		
-		addKeyListener(this); //Gives our gamePanel class an event 'KeyListener' that will listen for key strokes
-		setFocusable(true);   //Brings gamePanel to front if it isn't
+		loadLabels();
+		addKeyListener(this);
+		setFocusable(true);  
 	}
 
-	private void loadSFX()
-	{
-		gameSFX = new ArrayList<AudioPlayer>();
-		gameSFX.add(0, new AudioPlayer("/SFX/brickbreak.mp3"));
-		gameSFX.add(1, new AudioPlayer("/SFX/paddlehit.mp3"));
-		gameSFX.add(2, new AudioPlayer("/SFX/gameover.mp3"));
-		gameSFX.add(3, new AudioPlayer("/SFX/gamewon.mp3"));
-	}
-
-	private void loadLables()
+	/**
+	 * This member function initalise's the labels and adds them to this.
+	 */
+	private void loadLabels()
 	{
 		setLayout(null);
 		lblGameScore = new JLabel();
 		lblGameScore.setFont(new Font("Helvetica", Font.BOLD, 14));
 		lblGameScore.setForeground(Color.BLACK);
 		lblGameScore.setText("Score: 0");
-		add(lblGameScore);
 		lblGameScore.setBounds(10, 450, 200, 200);
-
+		add(lblGameScore);
+		
 		lblPressEnter = new JLabel();
-		lblPressEnter.setText("Press ENTER to Start");
+		lblPressEnter.setText("Press the ENTER key to Start");
 		lblPressEnter.setFont(new Font("Helvetica", Font.BOLD, 14));
 		lblPressEnter.setForeground(Color.BLACK);
-		lblPressEnter.setBounds(235, 200, 200, 200);
+		lblPressEnter.setBounds(200, 200, 220, 200);
 		add(lblPressEnter);
 	}
+	
+	/**
+	 * This member function initalise's the gameSFX array and adds the sfx to the array for use by this.
+	 */
+	private void loadSFX()
+	{
+		gameSFX = new ArrayList<>();
+		gameSFX.add(0, new AudioPlayer("/SFX/brickbreak.mp3"));
+		gameSFX.add(1, new AudioPlayer("/SFX/paddlehit.mp3"));
+		gameSFX.add(2, new AudioPlayer("/SFX/gameover.mp3"));
+		gameSFX.add(3, new AudioPlayer("/SFX/gamewon.mp3"));
+	}
+	
+	/**
+	 * This member function initalise's and sets this' member variables default values.
+	 */
+	private void initaliseValues()
+	{
+		amountOfBricks = 10;
+		ballSize       = 25;
+		playAgain      = 0;
+		gameScore      = 0;
+		brickWidth     = 60;
+		brickHeight    = 25;
+		pressedEnter   = false;
+		lostGame       = false;
+		hasPlayerWon   = false;
+		baseRGBVal     = new int[3];
+		gameState      = new AnimatePane(this);
+		gameThread     = new Thread(gameState);
+	}
 
+	/**
+	 * This member function initalise's the entities, entBricks, entPlatform and entBall. 
+	 * As well as setting their default values for this. 
+	 * <br>The default value for entPlatform will change based on boolIsSetHardmode being true or false.
+	 */
 	private void loadEntities()
 	{
 		entBricks = new ArrayList<>();
-		if(boolIsSetHardmode == false)
+		if(!boolIsSetHardmode)
 		{
-            entPlatform = new Brick(230, 480, 150, 25);
+			entPlatform = new Brick(230, 480, 150, 25);
 		}
 		else if(boolIsSetHardmode)
 		{
-            entPlatform = new Brick(250, 480, 100, 25);
+			entPlatform = new Brick(250, 480, 100, 25);
 		}
 
 		entBall = new Ball(290, 420, ballSize, ballSize, "Resources\\Images\\ball.png");
@@ -102,136 +141,98 @@ public class GamePanel extends JPanel implements KeyListener
 
 		for(int i = 0; i < amountOfBricks; i++)
 		{
-			entBricks.add(new Brick(i * brickX, 0, brickWidth, brickHeight));
+			entBricks.add(new Brick((i * 60), 0, brickWidth, brickHeight));
 		}
 		for(int i = 0; i < amountOfBricks; i++)
 		{
-			entBricks.add(new Brick(i * brickX, 25, brickWidth, brickHeight));
+			entBricks.add(new Brick((i * 60), 25, brickWidth, brickHeight));
 		}
 		for(int i = 0; i < amountOfBricks; i++)
 		{
-			entBricks.add(new Brick(i * brickX, 50, brickWidth, brickHeight));
+			entBricks.add(new Brick((i * 60), 50, brickWidth, brickHeight));
 		}
 		for(int i = 0; i < amountOfBricks; i++)
 		{
-			entBricks.add(new Brick(i * brickX, 75, brickWidth, brickHeight));
+			entBricks.add(new Brick((i * 60), 75, brickWidth, brickHeight));
 		}
 	}
-
-	public void setThemeChoice(int[] themeChoice, boolean isSetThemeChoice)
-	{
-        this.themeChoice = new int[3];
-	    if(isSetThemeChoice == false)
-        {
-            this.themeChoice[0] = 5;
-            this.themeChoice[1] = 5;
-            this.themeChoice[2] = 5;
-        }
-        else if(isSetThemeChoice)
-        {
-            this.themeChoice[0] = themeChoice[0];
-            this.themeChoice[1] = themeChoice[1];
-            this.themeChoice[2] = themeChoice[2];
-        }
-	}
-
-	public void setDifficulty(boolean isSetHardMode)
-    {
-        if(isSetHardMode == false)
-        {
-            boolIsSetHardmode = isSetHardMode;
-			strIsSetHardmode  = "NO";
-            loadEntities();
-        }
-        else if(isSetHardMode)
-        {
-            boolIsSetHardmode = isSetHardMode;
-            strIsSetHardmode  = "YES";
-            loadEntities();
-        }
-    }
-
+	
+	/**
+	 * This member function is inherited through the JComponent JPanel, see its documentation for more.
+	 * @param Graphics graphics Allows us to use this paintComponent to draw objects to this
+	 */
 	public void paintComponent(Graphics graphics)
 	{
-		super.paintComponent(graphics); //super keyword reference to the immediate parent class object e.g. the 'Graphics' of the JPanel
-		cR = 0;
-		cG = 0;
-		cB = 0;
-
-		for(int i = 0; i < entBricks.size(); i++)
+		super.paintComponent(graphics);  //super keyword reference to the immediate parent class object e.g. the 'Graphics' of this
+		crntRGBVal  = new int[]{0, 0, 0};
+		
+		for(int brickIndex = 0; brickIndex < entBricks.size(); brickIndex++)
 		{
-			entBrick = entBricks.get(i);
-			baseR = themeChoice[0];
-			baseG = themeChoice[1];
-			baseB = themeChoice[2];
-			cR += baseR;
-			cG += baseG;
-			cB += baseB;
-
-			if(cR >= 255)
-			{
-				cR = 0;
-			}
-			if(cG >= 255)
-			{
-				cG = 0;
-			}
-			if(cB >= 255)
-			{
-				cB = 0;
-			}
-
-			blockGradient = new Color(cR, cG, cB);
-			entBrick.drawBrick(graphics, blockGradient);
+			rndGenColour();
+			entBrick = entBricks.get(brickIndex);
+			entBrick.drawBrick(graphics, new Color(crntRGBVal[0], crntRGBVal[1], crntRGBVal[2]));
 		}
-		setBackground(blockGradient);
+		
 		entBall.drawBall(graphics, this);
-
-		platformColour = new Color(245, 245, 245);
-		entPlatform.drawBrick(graphics, platformColour);
+		entPlatform.drawBrick(graphics, new Color(245, 245, 245));
+		setBackground(new Color(crntRGBVal[0], crntRGBVal[1], crntRGBVal[2]));
+	}
+	
+	/**
+	 * This member function randomly generates a theme based on the inital theme values passed through.
+	 * <br>If none are passed through then it will generate a default theme for the player.
+	 */
+	private void rndGenColour()
+	{
+		baseRGBVal[0] = themeChoice[0];
+		baseRGBVal[1] = themeChoice[1];
+		baseRGBVal[2] = themeChoice[2];
+		crntRGBVal[0] += baseRGBVal[0];
+		crntRGBVal[1] += baseRGBVal[1];
+		crntRGBVal[2] += baseRGBVal[2];
+		
+		if(crntRGBVal[0] >= 255)
+		{
+			crntRGBVal[0] = 0;
+		}
+		if(crntRGBVal[1] >= 255)
+		{
+			crntRGBVal[1] = 0;
+		}
+		if(crntRGBVal[2] >= 255)
+		{
+			crntRGBVal[2] = 0;
+		}
 	}
 
-	public void update()
+	/**
+	 * This member function updates the state of the game every 10 ticks, for example:
+	 * <br>it evaluates the direction of the ball and sets it a new one, 
+	 * <br>it sets the state of the entBricks (e.g. has it been destroyed),
+	 * <br>it evaluates if the players entBall has interacted with the lower bound of the screen (if so the player loses),
+	 * <br>it evaluates if the entBall has interacted with the bounds of the entPlatform.
+	 * <br>Lastly, it repaints this object with the correct entity states and evaluates if the player has won.
+	 */
+	public void updateGameState()
 	{
-		/*LEFT EDGE
-		 * If the entBall is off the left edge we set the direction_x to be the velocity
-		 * which we set in the class to be 3 by default
-		 * If the entBall touches the left edge we set the direction to be positive
-		 */
 		if(entBall.x < 0)
 		{
 			entBall.setDirectionX(entBall.getVelocity());
 		}
-
-		/*RIGHT EDGE
-		 * This time we are the opposite, if the entBall's x position is off the right edge
-		 * we set the direction to be negative velocity
-		 */
 		if(entBall.x > getWidth() - ballSize)
 		{
 			entBall.setDirectionX(- (entBall.getVelocity()));
 		}
-
-		/*UPPER EDGE
-		 * Here we're doing the same but now for the upper edge, the only difference is now we're setting
-		 * the direction of the Y_axis by using direction_y
-		 */
 		if(entBall.y < 0)
 		{
 			entBall.setDirectionY(+ entBall.getVelocity());
 		}
-
-		/*LOWER EDGE
-		 * Here we're doing the exact opposite of the upper edge
-		 * However it's disabled for now because it's apart of the loss condition
-		 * entBall.direction_y = -(entBall.velocity);
-		 */
 		if(entBall.y > getHeight() - ballSize)
 		{
-			if(lostGame == false)
+			if(!lostGame)
 			{
 				lostGame = true;
-				if(this.isFocusOwner() == true)
+				if(this.isFocusOwner())
 				{
 					gameSFX.get(2).play();
 					JOptionPane.showMessageDialog(this, "YOU LOSE!", "GAME OVER", 0);
@@ -240,8 +241,6 @@ public class GamePanel extends JPanel implements KeyListener
 				}
 			}
 		}
-
-		//The direction of the entBall is determined after it goes through the if statements
 		entBall.x += entBall.getDirectionX();
 		entBall.y += entBall.getDirectionY();
 
@@ -253,107 +252,204 @@ public class GamePanel extends JPanel implements KeyListener
 			{
 				entBrick.setDestroyed(true);
 				entBall.setDirectionY(entBall.getVelocity());
-
 				gameSFX.get(0).play();
-				
-				if(boolIsSetHardmode)
-				{
-					gameScore += 2; //increment score by 2 for each block destroyed if in hard mode
-				}
-				else
-				{
-					gameScore++;
-				}
 
-				lblGameScore.setText("Score: " + Integer.toString(gameScore)); //show it on the score		
-			}
-
-			if(boolIsSetHardmode)
-			{
-				if(gameScore == 80) //if hard mode is set then 80 points will trigger the win
+				if(!boolIsSetHardmode)
 				{
-					gameSFX.get(3).play();
-					JOptionPane.showMessageDialog(this, "YOU WON HARD MODE!", "WINNER", 1);
-					saveScore();
-					playAgain();
+					gameScore++; 
 				}
+				else if(boolIsSetHardmode)
+				{
+					gameScore += 2;
+				}
+				lblGameScore.setText("Score: " + Integer.toString(gameScore));
 			}
-			else
+		}
+		if(entBall.intersects(entPlatform))
+		{
+			gameSFX.get(1).play();
+			lblPressEnter.setText("");
+			entBall.setDirectionY(-(entBall.getVelocity()));
+		}
+		repaint();
+		checkPlayerWin();
+	}
+	
+	/**
+	 * This member function evaluates if the player has won before (during the instance of the exact same game),
+	 * <br>evaluates if the player is in hardmode and then determines if they have met the respective win conditions,
+	 * <br>for the default game mode and hardmode.
+	 */
+	private void checkPlayerWin()
+	{
+		if(!hasPlayerWon)
+		{
+			if(!boolIsSetHardmode)
 			{
 				if(gameScore == 40) //if hard mode isn't set then 40 points will trigger the win
 				{
+					hasPlayerWon = true;
 					gameSFX.get(3).play();
 					JOptionPane.showMessageDialog(this, "YOU WIN!", "WINNER", 1);
 					saveScore();
 					playAgain();
 				}
 			}
-		}
-
-		if(entBall.intersects(entPlatform))
-		{
-			lblPressEnter.setText("");
-			gameSFX.get(1).play();
-			entBall.setDirectionY(-(entBall.getVelocity()));
-		}
-		repaint();	//repaints 'this' every tick
-	}
-
-	public void saveScore()
-	{
-		scoreManager = new ScoreManagerPanel();
-		usrInput = JOptionPane.showInputDialog
-				(this, "Enter Username (no spaces) to Save Score: ", "Save Score to Leaderboard", JOptionPane.PLAIN_MESSAGE);
-
-		if(!(usrInput == null))
-		{
-			if(!(usrInput.trim().length() == 0))
+			else if(boolIsSetHardmode)
 			{
-				usrInput = usrInput.replace(" ", "");
-				if(usrInput.length() >= 10)
+				if(gameScore == 80) //if hard mode is set then 80 points will trigger the win
 				{
-					usrInput = usrInput.substring(0, 10);
+					hasPlayerWon = true;
+					gameSFX.get(3).play();
+					JOptionPane.showMessageDialog(this, "YOU WIN HARD MODE!", "WINNER", 1);
+					saveScore();
+					playAgain();
 				}
-				//usrInput = usrInput.toUpperCase();
-				scoreManager.writeNewScore(usrInput, gameScore, strIsSetHardmode);
 			}
 		}
 	}
 
-	public void playAgain()
+	/**
+	 * This member function saves the players name (providing its valid), score and if they were playing in hardmode or not to the leaderboard.
+	 */
+	private void saveScore()
 	{
-		dialogResult = JOptionPane.showConfirmDialog (this, "Would you like to play again?","You lose! Score: " + Integer.toString(gameScore), dialogResult);
+		scoreManager = new ScoreManagerPanel();
+		playerName = (String)JOptionPane.showInputDialog
+				(this, "Enter playername (no spaces) to Save Score: ", "Save Score to Leaderboard", JOptionPane.PLAIN_MESSAGE);
 
-		if(dialogResult == JOptionPane.NO_OPTION)
+		if(!(playerName == null))
 		{
-			thread.interrupt();
-			SwingUtilities.getWindowAncestor(this).dispose();
+			if(!(playerName.trim().length() == 0))
+			{
+				playerName = playerName.replace(" ", "");
+				if(playerName.length() >= 10)
+				{
+					playerName = playerName.substring(0, 10);
+				}
+				scoreManager.writeNewPlayer(playerName, gameScore, strIsSetHardmode);
+			}
 		}
-		else if(dialogResult == JOptionPane.YES_OPTION)
+	}
+
+	/**
+	 * This member function evaluates if the player has chosen to play again or exit. 
+	 * <br>By default we assume they do not want to play again if they fail to select 'yes' or 'no'.
+	 * <br>For example this can happen if they press ESC.
+	 */
+	private void playAgain()
+	{
+		playAgain = (int)JOptionPane.showConfirmDialog (this, "Would you like to play again?","You lose! Score: " + Integer.toString(gameScore), playAgain);
+
+		if(playAgain == JOptionPane.NO_OPTION)
+		{
+			exitGame();
+		}
+		else if(playAgain == JOptionPane.YES_OPTION)
 		{
 			resetGame();
 		}
+		else
+		{
+			exitGame();
+		}
 	}
-
+	
+	/**
+	 * This member function is called if the player decides to play again.
+	 * <br>It clears the current ArrayList of entBrick, loads the new entities with their default settings
+	 * <br>and gives the appearance of resetting the game.
+	 */
 	private void resetGame()
 	{
 		entBricks.clear();
+		pressedEnter = false;
+		lostGame     = false;
+		gameScore    = 0;
 		loadEntities();
-		lostGame  = false;
-		gameScore = 0;
-		lblGameScore.setText("Score: 0");
 	}
 
-	public void keyPressed(KeyEvent e) 
+	/**
+	 * This member function disposes of this and brings its ancestor component to the front.
+	 * <br>It also closes any open gameSFX's, preventing sound from playing when this has been disposed.
+	 */
+	private void exitGame()
 	{
-		if(e.getKeyCode() == KeyEvent.VK_ENTER && pressedEnter == false)
+		gameSFX.get(0).close();
+		gameSFX.get(1).close();
+		gameSFX.get(2).close();
+		gameSFX.get(3).close();
+		SwingUtilities.getWindowAncestor(this).dispose();
+		SwingUtilities.getWindowAncestor(this).setAlwaysOnTop(true);
+	}
+
+	/**
+	 * This member function sets a default theme for the player if they have not selected one.
+	 * <br>If they have selected a theme in the options menu, then it will set it to be the chosen them.
+	 * @param themeChoice int[] Expects an array containing the value of the themes
+	 * @param isSetThemeChoice boolean Expects true or false
+	 */
+	public void setThemeChoice(int[] themeChoice, boolean isSetThemeChoice)
+	{
+		this.themeChoice = new int[3];
+		if(!isSetThemeChoice)
+		{
+			this.themeChoice[0] = 5;
+			this.themeChoice[1] = 5;
+			this.themeChoice[2] = 5;
+		}
+		else if(isSetThemeChoice)
+		{
+			this.themeChoice[0] = themeChoice[0];
+			this.themeChoice[1] = themeChoice[1];
+			this.themeChoice[2] = themeChoice[2];
+		}
+	}
+
+	/**
+	 * This member function evaluates if hardmode is true or not,
+	 * <br>the entities are then loaded with hardmode being set or not in mind.
+	 * @param isSetHardMode boolean Expects true or false
+	 */
+	public void setDifficulty(boolean isSetHardMode)
+	{
+		if(!isSetHardMode)
+		{
+			boolIsSetHardmode = isSetHardMode;
+			strIsSetHardmode  = "NO";
+			loadEntities();
+		}
+		else if(isSetHardMode)
+		{
+			boolIsSetHardmode = isSetHardMode;
+			strIsSetHardmode  = "YES";
+			lblPressEnter.setText("<html><center>" + lblPressEnter.getText() + "<br>HARD MODE</center></html>");
+			loadEntities();
+		}
+	}
+
+	/**
+	 * This member function is implemented through the KeyListener, see its documentation for more.
+	 * <br>This member function allows us to listen for key strokes by the player,
+	 * <br>including moving the platform by incrementing or decrementing the entPlatform's x coordinate.
+	 * <br>This member function ultimately allows the player to start the game by pressing ENTER and starting the gameThread.
+	 * @throws IllegalThreadStateException this is thrown if the thread ends up in a state its not allowed
+	 */
+	public void keyPressed(KeyEvent e)
+	{
+		if(e.getKeyCode() == KeyEvent.VK_ENTER && !pressedEnter)
 		{
 			pressedEnter = true;
-			gameState = new Animation(this);
-			thread  = new Thread(gameState);
-			thread.start();
+			try
+			{
+				gameThread.start();
+			}
+			catch(IllegalThreadStateException illThreadState)
+			{
+				System.out.println("Caught the illegal thread state.");
+			}
 		}
-		if((e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT))
+		if((e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT) && entPlatform.x > 0)
 		{
 			entPlatform.x -= 60;
 		}
@@ -363,17 +459,26 @@ public class GamePanel extends JPanel implements KeyListener
 		}
 		if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
 		{
-			thread.interrupt();
-			SwingUtilities.getWindowAncestor(this).dispose();
+			exitGame();
 		}
 	}
 
-	public void keyReleased(KeyEvent e) 
+	/**
+	 * This member function is implemented through the KeyListener, see its documentation for more.
+	 * <br>Note: Because we implement KeyListener the member function 'keyReleased' must be present,
+	 * <br>even if we do not use it.
+	 */
+	public void keyReleased(KeyEvent e)
 	{
 
 	}
-
-	public void keyTyped(KeyEvent e) 
+	
+	/**
+	 * This member function is implemented through the KeyListener, see its documentation for more.
+	 * <br>Note: Because we implement KeyListener the member function 'keyTyped' must be present,
+	 * <br>even if we do not use it.
+	 */
+	public void keyTyped(KeyEvent e)
 	{
 
 	}

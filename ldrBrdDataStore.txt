@@ -1,7 +1,5 @@
 
-Con 80 YES
-suzy 79 YES
-james 78 YES
-Connor 77 YES
-swagging 8 NO
-cammy 2 NO
+Suzy 16 YES
+con 15 NO
+Con 12 YES
+jam 10 YES
