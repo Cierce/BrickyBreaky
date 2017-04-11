@@ -16,6 +16,7 @@ public class Brick extends Rectangle
 	private static final long serialVersionUID = -1617190210940294056L; //long serialVersionUID stores the serialVersionUID generated value
 	private Graphics2D brickOutline; //Graphics2D brickOutline stores
 	private boolean destroyed;       //boolean destroyed stores
+    private int oldWidth;
 
 	/**
 	 * This constructor expects a pair of x and y coordinates (upper-left corner) and the width and height of this.
@@ -31,6 +32,7 @@ public class Brick extends Rectangle
 		this.y 		= y;
 		this.width  = width;
 		this.height = height;
+		oldWidth    = width;
 		destroyed   = false;
 	}
 
@@ -69,6 +71,16 @@ public class Brick extends Rectangle
 	public void setDestroyed(boolean destroyed) 
 	{
 		this.destroyed = destroyed;
+	}
+
+	public int getXPos()
+	{
+		return this.x;
+	}
+
+	public int getYPos()
+	{
+		return  this.y;
 	}
 }
 

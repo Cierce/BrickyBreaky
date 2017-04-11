@@ -17,7 +17,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 /**
- * This provides the player with the Main Menu graphical user interface and is responsible for providing the player 
+ * This provides the player with the Main Menu graphical user interface and is responsible for providing the player
  * <br>with access to the game, leaderboard, how to play and options GUI's.
  * @author Connor Phillips
  * @version 1.0
@@ -50,14 +50,13 @@ public class MainMenu
 	 * <br>We also set the look and feel throughout the GUI from this member function.
 	 * @param args String[] Required paramater to use the main() member function
 	 */
-	public static void main(String[] args) 
+	public static void main(String[] args)
 	{
-		try 
+		try
 		{
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} 
-		catch 
-		(ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) 
+		}
+		catch(ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e)
 		{
 			e.printStackTrace();
 		} //documentation http://docs.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
@@ -90,7 +89,7 @@ public class MainMenu
 		frmMenu.add(pnlMenu);
 		frmMenu.setVisible(true);
 	}
-	
+
 	/**
 	 * This member function initalise's our Main Menu JButtons and displays them.
 	 */
@@ -131,17 +130,17 @@ public class MainMenu
 		btnExit.setBackground(bgColour);
 		pnlMenu.add(btnExit);
 	}
-	
+
 	/**
 	 * This member function initalise's our Main Menu JPanel to be displayed by our Main Menu JFrame.
 	 */
-	private void loadPanel() 
+	private void loadPanel()
 	{
 		pnlMenu = new JPanel();
 		pnlMenu.setLayout(new BoxLayout(pnlMenu, javax.swing.BoxLayout.Y_AXIS));
 		pnlMenu.setBackground(bgColour);
 	}
-	
+
 	/**
 	 * This member function initalise's values that are used throughout the Main Menu
 	 * <br>and sets the default state of isSetTheme and isSetHardMode.
@@ -193,7 +192,7 @@ public class MainMenu
 		dlgOptions.setBackground(bgColour);
 		dlgOptions.setVisible(true);
 	}
-	
+
 	/**
 	 * This member function will load the ScoreManagerPanel and display it,
 	 * <br>however to display the Leaderboard it must be called through the instance of the ScoreManagerPanel object,
@@ -217,7 +216,7 @@ public class MainMenu
 		dlgLeaderboard.setBackground(bgColour);
 		dlgLeaderboard.setVisible(true);
 	}
-	
+
 	/**
 	 * This member function will load the GamePanel and display it.
 	 */
@@ -246,7 +245,7 @@ public class MainMenu
 	 */
 	private class GameHandler implements ActionListener
 	{
-		public void actionPerformed(ActionEvent event) 
+		public void actionPerformed(ActionEvent event)
 		{
 			loadGame();
 		}
@@ -260,7 +259,7 @@ public class MainMenu
 	 */
 	private class LeaderboardHandler implements ActionListener
 	{
-		public void actionPerformed(ActionEvent event) 
+		public void actionPerformed(ActionEvent event)
 		{
 			loadLeaderboard();
 		}
@@ -289,7 +288,7 @@ public class MainMenu
 	}
 
 	/**
-	 * This handler will dispose of the frmMenu in the MainMenu object. 
+	 * This handler will dispose of the frmMenu in the MainMenu object.
 	 * <br>It will call the loadOptions() method in the MainMenu object when added to a Component as a new actionListener.
 	 * @author Connor Phillips
 	 * @version 1.0
@@ -313,7 +312,7 @@ public class MainMenu
 	 */
 	private class ExitHandler implements ActionListener
 	{
-		public void actionPerformed(ActionEvent event) 
+		public void actionPerformed(ActionEvent event)
 		{
 			System.exit(0);
 		}
