@@ -1,5 +1,2 @@
 
-Suzy 81 YES
 Con 80 YES
-Cam 49 NO
-james 10 NO
